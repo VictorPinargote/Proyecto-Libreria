@@ -20,7 +20,6 @@
     'depends': ['base'],
     'data': [
         'security/ir.model.access.csv',
-        'wizards/import_wizard_view.xml',
         'views/biblioteca_views.xml',
     ],
     

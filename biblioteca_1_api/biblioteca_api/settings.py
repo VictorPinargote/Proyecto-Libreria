@@ -49,6 +49,11 @@ INSTALLED_APPS = [
 ]
 
 REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    
     'DEFAULT_PAGINATION_CLASS':[
         'rest_framework.autentication.TokenAuthentication',
         'rest_framework.authentication.SessionAuthentication'
@@ -156,3 +161,8 @@ Codigos de estado:
 404: Not Found (no encontrado)
 500: Internal Server Error (error interno del servidor)
 """
+
+ODOO_URL = 'http://localhost:8069'
+ODOO_DB = 'Bd_proyecto'
+ODOO_USER = 'Joel' 
+ODOO_PASS = '5635'

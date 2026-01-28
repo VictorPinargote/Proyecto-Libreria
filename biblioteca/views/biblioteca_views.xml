@@ -8,50 +8,19 @@
                     <field name="isbn"/>
                     <field name="titulo"/>
                     <field name="autor_id"/>
-                    <field name="estado"/>
+                    <field name="editorial"/>
+                    <field name="paginas"/>
                 </list>
             </field>
         </record>
 
-        <record id="view_libro_form" model="ir.ui.view">
-            <field name="name">biblioteca.libro.form</field>
-            <field name="model">biblioteca.libro</field>
-            <field name="arch" type="xml">
-                <form>
-                    <sheet>
-                        <group>
-                            <group>
-                                <field name="titulo"/>
-                                <field name="autor_id"/>
-                                <field name="isbn"/>
-                            </group>
-                            <group>
-                                <field name="portada" widget="image" class="oe_avatar"/>
-                                <field name="estado"/>
-                            </group>
-                        </group>
-                        <notebook>
-                            <page string="Detalles">
-                                <group>
-                                    <field name="editorial"/>
-                                    <field name="paginas"/>
-                                    <field name="descripcion"/>
-                                </group>
-                            </page>
-                        </notebook>
-                    </sheet>
-                </form>
-            </field>
-        </record>
-
         <record id="action_libros" model="ir.actions.act_window">
-            <field name="name">Libros</field>
+            <field name="name">Libros Importados</field>
             <field name="res_model">biblioteca.libro</field>
             <field name="view_mode">list,form</field>
         </record>
 
         <menuitem id="menu_root" name="Biblioteca" sequence="10"/>
-        <menuitem id="menu_libros" name="Libros" parent="menu_root" action="action_libros" sequence="10"/>
-        <menuitem id="menu_importar" name="📥 Importar" parent="menu_root" action="action_import_wizard" sequence="20"/>
+        <menuitem id="menu_libros" name="Libros" parent="menu_root" action="action_libros"/>
     </data>
 </odoo>

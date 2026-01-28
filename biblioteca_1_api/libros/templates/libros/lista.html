@@ -1,0 +1,58 @@
+{% extends 'libros/base.html' %}
+
+{% block title %}Catálogo de Libros{% endblock %}
+
+{% block content %}
+<div class="card shadow">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <h4 class="m-0 font-weight-bold text-primary"><i class="bi bi-collection"></i> Catálogo Local</h4>
+        <a href="{% url 'buscador_web' %}" class="btn btn-success btn-sm">
+            <i class="bi bi-plus-circle"></i> Importar Nuevo
+        </a>
+    </div>
+    <div class="card-body">
+        {% if libros %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Portada</th>
+                            <th>Título</th>
+                            <th>ISBN</th>
+                            <th>Autor</th>
+                            <th>Páginas</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for libro in libros %}
+                        <tr>
+                            <td style="width: 80px;">
+                                {% if libro.imagen_url %}
+                                    <img src="{{ libro.imagen_url }}" class="img-thumbnail" style="max-height: 80px;">
+                                {% else %}
+                                    <span class="badge bg-secondary">Sin Foto</span>
+                                {% endif %}
+                            </td>
+                            <td class="fw-bold">{{ libro.titulo }}</td>
+                            <td><span class="font-monospace">{{ libro.isbn }}</span></td>
+                            <td>{{ libro.autor }}</td>
+                            <td>{{ libro.paginas }}</td>
+                            <td>
+                                <span class="badge bg-success">Guardado</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5 text-muted">
+                <i class="bi bi-inbox display-4"></i>
+                <p class="mt-3">Aún no has importado ningún libro.</p>
+                <a href="{% url 'buscador_web' %}" class="btn btn-primary">Ir al Buscador</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
