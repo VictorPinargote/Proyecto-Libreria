@@ -1,0 +1,36 @@
+<odoo>
+    <record id="view_wizard_form" model="ir.ui.view">
+        <field name="name">biblioteca.wizard.form</field>
+        <field name="model">biblioteca.import.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Importar Libro">
+                <group>
+                    <field name="query" placeholder="Ej: Harry Potter"/>
+                    <field name="state" invisible="1"/>
+                </group>
+                <group invisible="state != 'found'">
+                    <group>
+                        <field name="preview_titulo"/>
+                        <field name="preview_autor"/>
+                        <field name="preview_isbn"/>
+                    </group>
+                    <group>
+                        <field name="preview_cover_url" widget="url"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="action_buscar" string="🔍 Buscar" type="object" class="btn-primary" invisible="state == 'found'"/>
+                    <button name="action_confirmar" string="✅ Importar" type="object" class="btn-success" invisible="state != 'found'"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_import_wizard" model="ir.actions.act_window">
+        <field name="name">Importar Libro</field>
+        <field name="res_model">biblioteca.import.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>
