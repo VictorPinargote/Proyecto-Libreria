@@ -1,0 +1,81 @@
+{% extends "index.html" %}
+
+{% block contenido %}
+<div class="col-12">
+    <div class="card shadow-sm" style="max-width: 600px; margin: 0 auto;">
+        <!-- Header -->
+        <div class="card-header text-white py-3 text-center" style="background: #ea580c; border-radius: 16px 16px 0 0;">
+            <h4 class="mb-0 fw-bold">
+                <i class="bi bi-calendar-check-fill me-2"></i>Crear Nuevo Préstamo
+            </h4>
+        </div>
+
+        <!-- Body -->
+        <div class="card-body p-4">
+            <form method="POST">
+                {% csrf_token %}
+
+                <div class="mb-4">
+                    <label for="id_libro" class="form-label fw-semibold">
+                        <i class="bi bi-book me-2 text-warning"></i>Libro
+                    </label>
+                    <select id="id_libro" name="libro" class="form-select form-select-lg rounded-3" required>
+                        <option value="">-- Seleccionar Libro --</option>
+                        {% for libro in libros %}
+                        <option value="{{ libro.id }}">{{ libro.titulo }} - {{ libro.autor }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="form-text mt-2">
+                        <i class="bi bi-info-circle me-1"></i>Solo libros disponibles
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="id_usuario" class="form-label fw-semibold">
+                        <i class="bi bi-person-circle me-2 text-warning"></i>Usuario
+                    </label>
+                    <select id="id_usuario" name="usuario" class="form-select form-select-lg rounded-3" required>
+                        <option value="">-- Seleccionar Usuario --</option>
+                        {% for usuario in usuarios %}
+                        <option value="{{ usuario.id }}">
+                            {{ usuario.username }} - {{ usuario.get_full_name|default:usuario.username }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <label for="id_fecha_prestamo" class="form-label fw-semibold">
+                            <i class="bi bi-calendar-event me-2 text-warning"></i>Fecha de Préstamo
+                        </label>
+                        <input type="date" id="id_fecha_prestamo" name="fecha_prestamo" value="{{ fecha }}"
+                            class="form-control form-control-lg rounded-3" required>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <label for="id_fecha_max" class="form-label fw-semibold">
+                            <i class="bi bi-calendar-x me-2 text-danger"></i>Fecha Máxima
+                        </label>
+                        <input type="date" id="id_fecha_max" name="fecha_max"
+                            class="form-control form-control-lg rounded-3" required>
+                    </div>
+                </div>
+
+                <div class="alert alert-warning rounded-3 mb-4">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <strong>Importante:</strong> Verifica que el libro esté en buen estado antes de prestarlo.
+                </div>
+
+                <div class="d-grid gap-2 mt-4">
+                    <button type="submit" class="btn btn-warning btn-lg rounded-pill fw-bold text-white">
+                        <i class="bi bi-check2-circle me-2"></i>Crear Préstamo
+                    </button>
+                    <a href="{% url 'lista_prestamos' %}" class="btn btn-outline-secondary btn-lg rounded-pill">
+                        <i class="bi bi-arrow-left me-2"></i>Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

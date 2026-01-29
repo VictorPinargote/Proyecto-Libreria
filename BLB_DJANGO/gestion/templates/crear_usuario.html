@@ -1,0 +1,87 @@
+{% extends "index.html" %}
+
+{% block contenido %}
+<div class="col-12">
+    <div class="card shadow border-0 rounded-4" style="max-width: 600px; margin: 0 auto;">
+        <div class="card-header text-white py-4 text-center"
+            style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);">
+            <h3 class="mb-0 fw-bold">
+                <i class="bi bi-person-plus me-2"></i>Crear Usuario
+            </h3>
+        </div>
+        <div class="card-body p-4">
+            <form method="POST">
+                {% csrf_token %}
+
+                <!-- Datos de cuenta -->
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Usuario</label>
+                    <input type="text" name="username" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Email</label>
+                    <input type="email" name="email" class="form-control" required>
+                </div>
+
+                <!-- Datos personales -->
+                <div class="row">
+                    <div class="col-6 mb-3">
+                        <label class="form-label fw-semibold">Nombre</label>
+                        <input type="text" name="first_name" class="form-control" required>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <label class="form-label fw-semibold">Apellido</label>
+                        <input type="text" name="last_name" class="form-control" required>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6 mb-3">
+                        <label class="form-label fw-semibold">Cédula</label>
+                        <input type="text" name="cedula" class="form-control" maxlength="13" required>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <label class="form-label fw-semibold">Teléfono</label>
+                        <input type="text" name="telefono" class="form-control" maxlength="10" required>
+                    </div>
+                </div>
+
+                <!-- Contraseñas -->
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Contraseña</label>
+                    <input type="password" name="password1" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Confirmar Contraseña</label>
+                    <input type="password" name="password2" class="form-control" required>
+                </div>
+
+                <!-- Rol -->
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">
+                        <i class="bi bi-person-badge me-1"></i>Rol del Usuario
+                    </label>
+                    <select name="rol" class="form-select" required>
+                        <option value="usuario">👤 Usuario Normal</option>
+                        <option value="bodeguero">📦 Bodeguero</option>
+                        <option value="bibliotecario">📚 Bibliotecario</option>
+                        <option value="admin">⚙️ Administrador</option>
+                        <option value="superusuario">🔐 Superusuario</option>
+                    </select>
+                    <small class="text-muted">Como admin, puedes crear cualquier tipo de usuario</small>
+                </div>
+
+                <!-- Botones -->
+                <div class="d-grid gap-2 mt-4">
+                    <button type="submit" class="btn btn-lg rounded-pill fw-bold"
+                        style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white;">
+                        <i class="bi bi-check-circle me-2"></i>Crear Usuario
+                    </button>
+                    <a href="{% url 'lista_usuarios' %}" class="btn btn-outline-secondary rounded-pill">
+                        <i class="bi bi-arrow-left me-2"></i>Volver
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

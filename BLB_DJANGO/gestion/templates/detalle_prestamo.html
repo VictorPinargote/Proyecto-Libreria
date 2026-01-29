@@ -1,0 +1,219 @@
+{% extends "index.html" %}
+
+{% block contenido %}
+<div class="col-12">
+    <div class="card shadow-sm" style="max-width: 800px; margin: 0 auto;">
+        <!-- Header -->
+        <div class="card-header text-white py-3 d-flex justify-content-between align-items-center"
+            style="background: #ea580c; border-radius: 16px 16px 0 0;">
+            <h4 class="mb-0 fw-bold">
+                <i class="bi bi-clipboard-data-fill me-2"></i>Detalle del Préstamo
+            </h4>
+            <span class="badge bg-light text-dark px-3 py-2 rounded-pill">#{{ prestamo.id }}</span>
+        </div>
+
+        <!-- Body -->
+        <div class="card-body p-4">
+            <!-- Info del Libro y Usuario -->
+            <div class="row mb-4">
+                <div class="col-md-6 mb-3 mb-md-0">
+                    <div class="p-3 rounded-3 bg-light">
+                        <h6 class="fw-bold text-primary mb-2">
+                            <i class="bi bi-book-fill me-2"></i>Libro
+                        </h6>
+                        <p class="mb-1"><strong>Título:</strong> {{ prestamo.libro.titulo }}</p>
+                        <p class="mb-0"><strong>Autor:</strong> {{ prestamo.libro.autor }}</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="p-3 rounded-3 bg-light">
+                        <h6 class="fw-bold text-success mb-2">
+                            <i class="bi bi-person-circle me-2"></i>Usuario
+                        </h6>
+                        <p class="mb-1"><strong>Username:</strong> {{ prestamo.usuario.username }}</p>
+                        <p class="mb-0">
+                            <strong>Nombre: </strong>
+                            {{ prestamo.usuario.get_full_name|default:prestamo.usuario.username }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fechas -->
+            <div class="p-3 rounded-3 mb-4" style="background: #fef3c7;">
+                <h6 class="fw-bold mb-3" style="color: #92400e;">
+                    <i class="bi bi-calendar-range me-2"></i>Fechas del Préstamo
+                </h6>
+                <div class="row">
+                    <div class="col-md-4 mb-2 mb-md-0">
+                        <small class="text-muted d-block">Fecha de Préstamo</small>
+                        <span class="fw-semibold">{{ prestamo.fecha_prestamos }}</span>
+                    </div>
+                    <div class="col-md-4 mb-2 mb-md-0">
+                        <small class="text-muted d-block">Fecha Máxima</small>
+                        <span class="fw-semibold">{{ prestamo.fecha_max }}</span>
+                    </div>
+                    <div class="col-md-4">
+                        <small class="text-muted d-block">Fecha de Devolución</small>
+                        {% if prestamo.fecha_devolucion %}
+                        <span class="fw-semibold">{{ prestamo.fecha_devolucion }}</span>
+                        {% else %}
+                        <span class="badge bg-warning">Pendiente</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estado -->
+            <div
+                class="p-3 rounded-3 mb-4 {% if prestamo.dias_retraso %}bg-danger-subtle{% else %}bg-success-subtle{% endif %}">
+                <div class="row align-items-center">
+                    <div class="col-md-6 mb-2 mb-md-0">
+                        <h6
+                            class="fw-bold mb-2 {% if prestamo.dias_retraso %}text-danger{% else %}text-success{% endif %}">
+                            <i
+                                class="bi bi-{% if prestamo.dias_retraso %}exclamation-triangle{% else %}check-circle{% endif %}-fill me-2"></i>
+                            Estado del Préstamo
+                        </h6>
+                        {% if prestamo.dias_retraso %}
+                        <span class="badge bg-danger">
+                            <i class="bi bi-clock-fill me-1"></i>Retrasado {{ prestamo.dias_retraso }} día(s)
+                        </span>
+                        {% else %}
+                        <span class="badge bg-success">
+                            <i class="bi bi-check-circle me-1"></i>A tiempo
+                        </span>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <small class="text-muted d-block">Multa por Retraso</small>
+                        <span class="fw-bold text-danger fs-4">${{ prestamo.multa_retraso }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Multas Asociadas -->
+            <div class="p-3 rounded-3 mb-4 bg-danger-subtle">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="fw-bold text-danger mb-0">
+                        <i class="bi bi-receipt-cutoff me-2"></i>Multas Asociadas
+                    </h6>
+                    {% if user.is_staff and not prestamo.fecha_devolucion %}
+                    <a href="{% url 'crear_multa' prestamo.id %}" class="btn btn-sm btn-danger rounded-pill">
+                        <i class="bi bi-plus-circle me-1"></i>Agregar Multa
+                    </a>
+                    {% endif %}
+                </div>
+                {% if multas %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0 bg-white rounded">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Tipo</th>
+                                <th>Monto</th>
+                                <th>Fecha</th>
+                                <th>Estado</th>
+                                <th class="text-center">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for multa in multas %}
+                            <tr>
+                                <td><span class="badge bg-secondary">{{ multa.get_tipo_display }}</span></td>
+                                <td class="fw-bold">${{ multa.monto }}</td>
+                                <td>{{ multa.fecha }}</td>
+                                <td>
+                                    {% if multa.pagada %}
+                                    <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Pagada</span>
+                                    {% else %}
+                                    <span class="badge bg-warning"><i class="bi bi-clock me-1"></i>Pendiente</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    {% if not multa.pagada and user.is_staff %}
+                                    <a href="{% url 'pagar_multa' multa.id %}"
+                                        class="btn btn-sm btn-success rounded-pill">
+                                        <i class="bi bi-check-lg me-1"></i>Pagar
+                                    </a>
+                                    {% else %}
+                                    <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted mb-0 text-center">
+                    <i class="bi bi-info-circle me-2"></i>No hay multas asociadas
+                </p>
+                {% endif %}
+            </div>
+
+            <!-- Renovar Préstamo -->
+            {% if user.is_staff and not prestamo.fecha_devolucion and prestamo.dias_retraso > 0 %}
+            <div class="p-3 rounded-3 mb-4" style="background: #fef3c7;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="fw-bold text-warning mb-1">
+                            <i class="bi bi-arrow-repeat me-2"></i>¿Renovar Préstamo?
+                        </h6>
+                        <small class="text-muted">Extiende el plazo 7 días más desde hoy</small>
+                    </div>
+                    <a href="{% url 'renovar_prestamo' prestamo.id %}" class="btn btn-warning rounded-pill fw-semibold">
+                        <i class="bi bi-arrow-repeat me-2"></i>Renovar
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Devolver Libro -->
+            {% if user.is_staff and not prestamo.fecha_devolucion %}
+            <div class="p-3 rounded-3 mb-4" style="background: #e0f2fe;">
+                <h6 class="fw-bold text-primary mb-3">
+                    <i class="bi bi-box-arrow-in-left me-2"></i>Devolver Libro
+                </h6>
+                <form method="POST" action="{% url 'devolver_libro' prestamo.id %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Estado del libro al devolver:</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="estado_libro" value="bueno"
+                                id="estado_bueno" checked>
+                            <label class="form-check-label" for="estado_bueno">
+                                <i class="bi bi-check-circle text-success me-1"></i>Buen estado
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="estado_libro" value="deterioro"
+                                id="estado_deterioro">
+                            <label class="form-check-label" for="estado_deterioro">
+                                <i class="bi bi-exclamation-triangle text-warning me-1"></i>Deterioro (Multa $10.00)
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="estado_libro" value="perdida"
+                                id="estado_perdida">
+                            <label class="form-check-label" for="estado_perdida">
+                                <i class="bi bi-x-circle text-danger me-1"></i>Pérdida (Multa $20.00)
+                            </label>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-success rounded-pill fw-semibold">
+                        <i class="bi bi-check-lg me-2"></i>Confirmar Devolución
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+
+            <!-- Botón Volver -->
+            <div class="d-grid">
+                <a href="{% url 'lista_prestamos' %}" class="btn btn-primary btn-lg rounded-pill fw-semibold">
+                    <i class="bi bi-arrow-left me-2"></i>Volver a Préstamos
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

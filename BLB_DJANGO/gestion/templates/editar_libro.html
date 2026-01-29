@@ -1,0 +1,80 @@
+{% extends "index.html" %}
+
+{% block contenido %}
+<div class="col-12">
+    <div class="card shadow-sm" style="max-width: 750px; margin: 0 auto; border-radius: 24px;">
+        <div class="card-header text-white py-4 text-center"
+            style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+            <h4 class="mb-0 fw-bold"><i class="bi bi-pencil me-2"></i>Editar Libro</h4>
+        </div>
+        <div class="card-body p-4">
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                {% if libro.imagen %}
+                <div class="text-center mb-4">
+                    <img src="{{ libro.imagen.url }}" class="rounded shadow" style="max-height: 150px;">
+                </div>
+                {% endif %}
+
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">Titulo</label>
+                    <input type="text" name="titulo" class="form-control form-control-lg" value="{{ libro.titulo }}"
+                        required>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">Autor</label>
+                    <select name="autor" class="form-select form-select-lg" required id="autor_select">
+                        {% for a in autores %}
+                        <option value="{{ a.id }}">{{ a.nombre }} {{ a.apellido }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">Anio</label>
+                    <input type="number" name="anio_publicacion" class="form-control form-control-lg"
+                        value="{{ libro.anio_publicacion|default:'' }}">
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">Descripcion</label>
+                    <textarea name="descripcion" class="form-control"
+                        rows="4">{{ libro.descripcion|default:'' }}</textarea>
+                </div>
+
+                <div class="row">
+                    <div class="col-6 mb-4">
+                        <label class="form-label fw-semibold">Stock</label>
+                        <input type="number" name="stock" class="form-control form-control-lg" value="{{ libro.stock }}"
+                            min="0" max="500" required>
+                    </div>
+                    <div class="col-6 mb-4">
+                        <label class="form-label fw-semibold">Disponible</label>
+                        <div class="form-check form-switch mt-2">
+                            <input class="form-check-input" type="checkbox" name="disponible" {% if libro.disponible %}
+                                checked {% endif %}>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">Cambiar Imagen</label>
+                    <input type="file" name="imagen" class="form-control" accept="image/*">
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-warning btn-lg text-white fw-bold">Guardar Cambios</button>
+                    <a href="{% url 'detalle_libro' libro.id %}" class="btn btn-outline-secondary btn-lg">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Seleccionar el autor correcto
+    document.getElementById('autor_select').value = '{{ libro.autor.id }}';
+</script>
+{% endblock %}

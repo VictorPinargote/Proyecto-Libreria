@@ -1,0 +1,54 @@
+{% extends "index.html" %}
+
+{% block contenido %}
+<div class="col-12">
+    <div class="card shadow-sm" style="max-width: 600px; margin: 0 auto;">
+        <!-- Header -->
+        <div class="card-header text-white py-3 text-center" style="background: #0891b2; border-radius: 16px 16px 0 0;">
+            <h4 class="mb-0 fw-bold">
+                <i class="bi bi-pencil-square me-2"></i>Editar Autor
+            </h4>
+        </div>
+
+        <!-- Body -->
+        <div class="card-body p-4">
+            <form method="POST">
+                {% csrf_token %}
+
+                <div class="mb-4">
+                    <label for="id_nombre" class="form-label fw-semibold">
+                        <i class="bi bi-person me-2 text-info"></i>Nombre
+                    </label>
+                    <input type="text" id="id_nombre" name="nombre" value="{{ autor.nombre }}"
+                        class="form-control form-control-lg rounded-3" placeholder="Ej: Gabriel" required>
+                </div>
+
+                <div class="mb-4">
+                    <label for="id_apellido" class="form-label fw-semibold">
+                        <i class="bi bi-person-badge me-2 text-info"></i>Apellido
+                    </label>
+                    <input type="text" id="id_apellido" name="apellido" value="{{ autor.apellido }}"
+                        class="form-control form-control-lg rounded-3" placeholder="Ej: García Márquez" required>
+                </div>
+
+                <div class="mb-4">
+                    <label for="id_bibliografia" class="form-label fw-semibold">
+                        <i class="bi bi-journal-text me-2 text-info"></i>Biografía
+                    </label>
+                    <textarea id="id_bibliografia" name="bibliografia" class="form-control form-control-lg rounded-3"
+                        rows="3" placeholder="Breve biografía del autor...">{{ autor.bibliografia }}</textarea>
+                </div>
+
+                <div class="d-grid gap-2 mt-4">
+                    <button type="submit" class="btn btn-info btn-lg rounded-pill fw-bold text-white">
+                        <i class="bi bi-save me-2"></i>Guardar Cambios
+                    </button>
+                    <a href="{% url 'lista_autores' %}" class="btn btn-outline-secondary btn-lg rounded-pill">
+                        <i class="bi bi-arrow-left me-2"></i>Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

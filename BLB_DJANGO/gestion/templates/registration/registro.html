@@ -1,0 +1,168 @@
+{% extends "index.html" %}
+
+{% block contenido %}
+<div class="col-12">
+    <div class="card shadow border-0" style="max-width: 650px; margin: 0 auto; border-radius: 24px; overflow: hidden;">
+        <!-- Header con gradiente verde vibrante -->
+        <div class="card-header text-white py-5 text-center"
+            style="background: linear-gradient(135deg, #059669 0%, #10b981 50%, #34d399 100%);">
+            <div class="mb-3">
+                <i class="bi bi-person-plus-fill display-3"></i>
+            </div>
+            <h3 class="mb-0 fw-bold">Crear Nueva Cuenta</h3>
+            <p class="mb-0 mt-2 opacity-75">Únete a BiblioTech hoy</p>
+        </div>
+
+        <div class="card-body p-4" style="background: linear-gradient(180deg, #ecfdf5 0%, #ffffff 100%);">
+
+            {% if form.errors %}
+            <div class="alert rounded-3 mb-4"
+                style="background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); border: 1px solid #fecaca; color: #dc2626;">
+                <strong><i class="bi bi-exclamation-triangle me-2"></i>Corrige los siguientes errores:</strong>
+                <ul class="mb-0 mt-2">
+                    {% for field in form %}
+                    {% for error in field.errors %}
+                    <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                    {% endfor %}
+                    {% endfor %}
+                    {% for error in form.non_field_errors %}
+                    <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            <form method="POST">
+                {% csrf_token %}
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-semibold">
+                            <i class="bi bi-person me-1" style="color: #059669;"></i>Usuario
+                        </label>
+                        <input type="text" name="username" class="form-control form-control-lg rounded-3"
+                            style="border: 2px solid #d1fae5;" value="{{ form.username.value|default_if_none:'' }}"
+                            placeholder="Tu usuario">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-semibold">
+                            <i class="bi bi-envelope me-1" style="color: #059669;"></i>Email
+                        </label>
+                        <input type="email" name="email" class="form-control form-control-lg rounded-3"
+                            style="border: 2px solid #d1fae5;" value="{{ form.email.value|default_if_none:'' }}"
+                            placeholder="tu@email.com">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-semibold">
+                            <i class="bi bi-person-badge me-1" style="color: #059669;"></i>Nombre
+                        </label>
+                        <input type="text" name="first_name" class="form-control form-control-lg rounded-3"
+                            style="border: 2px solid #d1fae5;" value="{{ form.first_name.value|default_if_none:'' }}"
+                            placeholder="Tu nombre">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-semibold">
+                            <i class="bi bi-person-badge me-1" style="color: #059669;"></i>Apellido
+                        </label>
+                        <input type="text" name="last_name" class="form-control form-control-lg rounded-3"
+                            style="border: 2px solid #d1fae5;" value="{{ form.last_name.value|default_if_none:'' }}"
+                            placeholder="Tu apellido">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-semibold">
+                            <i class="bi bi-card-text me-1" style="color: #059669;"></i>Cédula
+                        </label>
+                        <input type="text" name="cedula" class="form-control form-control-lg rounded-3"
+                            style="border: 2px solid #d1fae5;" maxlength="13"
+                            value="{{ form.cedula.value|default_if_none:'' }}" placeholder="0000000000">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-semibold">
+                            <i class="bi bi-telephone me-1" style="color: #059669;"></i>Teléfono
+                        </label>
+                        <input type="text" name="telefono" class="form-control form-control-lg rounded-3"
+                            style="border: 2px solid #d1fae5;" maxlength="10"
+                            value="{{ form.telefono.value|default_if_none:'' }}" placeholder="0912345678">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-semibold">
+                            <i class="bi bi-lock me-1" style="color: #059669;"></i>Contraseña <small
+                                class="text-muted">(mín. 4)</small>
+                        </label>
+                        <input type="password" name="password1" class="form-control form-control-lg rounded-3"
+                            style="border: 2px solid #d1fae5;" placeholder="••••••••">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-semibold">
+                            <i class="bi bi-lock-fill me-1" style="color: #059669;"></i>Confirmar
+                        </label>
+                        <input type="password" name="password2" class="form-control form-control-lg rounded-3"
+                            style="border: 2px solid #d1fae5;" placeholder="••••••••">
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">
+                        <i class="bi bi-person-workspace me-1" style="color: #059669;"></i>Tipo de Cuenta
+                    </label>
+                    {{ form.rol }}
+                    <small class="text-muted d-block mt-1">
+                        <i class="bi bi-info-circle me-1"></i>Los roles especiales requieren código de verificación
+                    </small>
+                </div>
+
+                <div class="mb-3 p-3 rounded-3" id="div-codigo-rol"
+                    style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 1px solid #fcd34d;">
+                    <label class="form-label fw-semibold">
+                        <i class="bi bi-key me-1" style="color: #d97706;"></i>Código de Verificación
+                    </label>
+                    <input type="text" name="codigo_rol" class="form-control form-control-lg rounded-3"
+                        value="{{ form.codigo_rol.value|default_if_none:'' }}" placeholder="Ingresa el código del rol">
+                </div>
+
+                <div class="d-grid gap-2 mt-4">
+                    <button type="submit" class="btn btn-lg rounded-pill fw-bold py-3"
+                        style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); color: white; border: none;">
+                        <i class="bi bi-rocket-takeoff me-2"></i>Crear Mi Cuenta
+                    </button>
+                </div>
+
+                <div class="text-center mt-4">
+                    <p class="text-muted mb-0">
+                        ¿Ya tienes cuenta?
+                        <a href="{% url 'login' %}" class="fw-bold" style="color: #059669; text-decoration: none;">
+                            Inicia sesión aquí
+                        </a>
+                    </p>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    const selectRol = document.querySelector('[name="rol"]');
+    const divCodigoRol = document.getElementById('div-codigo-rol');
+
+    function actualizarCamposCodigo() {
+        if (selectRol && selectRol.value === 'usuario') {
+            divCodigoRol.style.display = 'none';
+        } else if (divCodigoRol) {
+            divCodigoRol.style.display = 'block';
+        }
+    }
+
+    if (selectRol) {
+        actualizarCamposCodigo();
+        selectRol.addEventListener('change', actualizarCamposCodigo);
+    }
+</script>
+{% endblock %}

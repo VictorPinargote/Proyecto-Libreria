@@ -1,0 +1,307 @@
+{% extends "index.html" %}
+
+{% block contenido %}
+<div class="col-12">
+    <div class="card shadow-sm" style="max-width: 800px; margin: 0 auto; border-radius: 24px; overflow: hidden;">
+        <!-- Header -->
+        <div class="card-header text-white py-4 text-center"
+            style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);">
+            <h4 class="mb-0 fw-bold">
+                <i class="bi bi-book-fill me-2"></i>Crear Nuevo Libro
+            </h4>
+            <p class="mb-0 mt-1 opacity-75">Busca en OpenLibrary o crea manualmente</p>
+        </div>
+
+        <!-- Body -->
+        <div class="card-body p-4" style="background: linear-gradient(180deg, #f0f9ff 0%, #ffffff 100%);">
+
+            <!-- Búsqueda OpenLibrary -->
+            <div class="mb-4 p-4 rounded-4"
+                style="background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%); border: 2px solid #93c5fd;">
+                <label class="form-label fw-bold fs-5 text-primary">
+                    <i class="bi bi-globe me-2"></i>Buscar en OpenLibrary
+                </label>
+                <p class="text-muted small mb-3">Busca un libro y todos los campos se llenarán automáticamente</p>
+                <div class="input-group input-group-lg">
+                    <input type="text" id="buscar_libro" class="form-control"
+                        placeholder="Escribe el título del libro...">
+                    <button type="button" class="btn btn-primary px-4" id="btn_buscar">
+                        <i class="bi bi-search me-1"></i> Buscar
+                    </button>
+                </div>
+                <div id="resultados_busqueda" class="mt-3"></div>
+            </div>
+
+            <!-- Vista previa de la imagen seleccionada -->
+            <div id="preview_imagen" class="text-center mb-4 p-3 rounded-3"
+                style="display: none; background: #ecfdf5; border: 2px solid #86efac;">
+                <img id="img_preview" src="" alt="Portada" class="rounded shadow mb-2" style="max-height: 180px;">
+                <p class="text-success mb-0 fw-bold"><i class="bi bi-check-circle me-1"></i>Libro de OpenLibrary
+                    seleccionado</p>
+                <button type="button" class="btn btn-outline-danger btn-sm mt-2" onclick="limpiarSeleccion()">
+                    <i class="bi bi-x-circle me-1"></i>Limpiar y llenar manualmente
+                </button>
+            </div>
+
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <!-- Campos ocultos para datos de OpenLibrary -->
+                <input type="hidden" name="imagen_url" id="imagen_url_input">
+                <input type="hidden" name="es_de_openlibrary" id="es_openlibrary_input" value="false">
+                <input type="hidden" name="autor_nombre" id="autor_nombre_input">
+
+                <!-- Título -->
+                <div class="mb-4">
+                    <label for="id_titulo" class="form-label fw-semibold">
+                        <i class="bi bi-fonts me-2 text-primary"></i>Título del Libro
+                    </label>
+                    <input type="text" id="id_titulo" name="titulo" class="form-control form-control-lg rounded-3"
+                        placeholder="Ej: Cien Años de Soledad" required>
+                </div>
+
+                <!-- Autor -->
+                <div class="mb-4">
+                    <label for="id_autor" class="form-label fw-semibold">
+                        <i class="bi bi-person-fill me-2 text-primary"></i>Autor
+                    </label>
+                    <div id="autor_select_wrapper">
+                        <select id="id_autor" name="autor" class="form-select form-select-lg rounded-3" required>
+                            <option value="">-- Seleccione un autor --</option>
+                            {% for autor in autores %}
+                            <option value="{{ autor.id }}">{{ autor.nombre }} {{ autor.apellido }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text mt-2">
+                            <i class="bi bi-info-circle me-1"></i>
+                            ¿No encuentras el autor? <a href="{% url 'crear_autores' %}">Créalo aquí</a>
+                        </div>
+                    </div>
+                    <!-- Campo de autor de solo lectura (para OpenLibrary) -->
+                    <div id="autor_readonly_wrapper" style="display: none;">
+                        <input type="text" id="id_autor_readonly" class="form-control form-control-lg rounded-3"
+                            readonly style="background: #f0fdf4; border: 2px solid #86efac; color: #166534;">
+                    </div>
+                </div>
+
+                <!-- Año de publicación -->
+                <div class="mb-4">
+                    <label for="id_anio" class="form-label fw-semibold">
+                        <i class="bi bi-calendar-event me-2 text-info"></i>Año de Publicación
+                    </label>
+                    <input type="number" id="id_anio" name="anio_publicacion"
+                        class="form-control form-control-lg rounded-3" placeholder="Ej: 1967" min="1000" max="2100">
+                </div>
+
+                <!-- Descripción -->
+                <div class="mb-4">
+                    <label for="id_descripcion" class="form-label fw-semibold">
+                        <i class="bi bi-journal-text me-2 text-purple"></i>Descripción / Sinopsis
+                    </label>
+                    <textarea id="id_descripcion" name="descripcion" class="form-control rounded-3" rows="3"
+                        placeholder="Breve descripción o sinopsis del libro..."></textarea>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <label for="id_stock" class="form-label fw-semibold">
+                            <i class="bi bi-box-seam me-2 text-success"></i>Cantidad (Stock)
+                        </label>
+                        <input type="number" id="id_stock" name="stock" class="form-control form-control-lg rounded-3"
+                            value="1" min="0" max="500" required>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label fw-semibold">
+                            <i class="bi bi-check-circle me-2 text-info"></i>Disponible
+                        </label>
+                        <div class="form-check form-switch mt-2">
+                            <input class="form-check-input" type="checkbox" name="disponible" id="id_disponible" checked
+                                style="width: 3em; height: 1.5em;">
+                            <label class="form-check-label" for="id_disponible">Sí, disponible</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4" id="imagen_manual_wrapper">
+                    <label for="id_imagen" class="form-label fw-semibold">
+                        <i class="bi bi-image me-2 text-warning"></i>Imagen de Portada (opcional)
+                    </label>
+                    <input type="file" id="id_imagen" name="imagen" class="form-control rounded-3" accept="image/*">
+                </div>
+
+                <div class="d-grid gap-2 mt-4">
+                    <button type="submit" class="btn btn-lg rounded-pill fw-bold py-3"
+                        style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); color: white;">
+                        <i class="bi bi-save me-2"></i>Guardar Libro
+                    </button>
+                    <a href="{% url 'lista_libros' %}" class="btn btn-outline-secondary btn-lg rounded-pill">
+                        <i class="bi bi-arrow-left me-2"></i>Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    let libroDeOpenLibrary = false;
+
+    document.getElementById('btn_buscar').addEventListener('click', buscarLibro);
+    document.getElementById('buscar_libro').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            buscarLibro();
+        }
+    });
+
+    function buscarLibro() {
+        const query = document.getElementById('buscar_libro').value;
+        if (query.length < 2) {
+            alert('Escribe al menos 2 caracteres para buscar');
+            return;
+        }
+
+        const resultadosDiv = document.getElementById('resultados_busqueda');
+        resultadosDiv.innerHTML = '<div class="text-center py-3"><div class="spinner-border text-primary" role="status"></div><p class="mt-2 text-muted">Buscando en OpenLibrary...</p></div>';
+
+        fetch('/api/libros/?q=' + encodeURIComponent(query))
+            .then(response => response.json())
+            .then(data => {
+                if (data.libros && data.libros.length > 0) {
+                    let html = '<div class="row g-3">';
+                    data.libros.slice(0, 6).forEach(libro => {
+                        const portada = libro.portada || '';
+                        const tieneImagen = portada && !portada.includes('undefined') && portada !== 'null';
+                        const autor = libro.autor || 'Autor desconocido';
+                        const anio = libro.año || '';
+                        const descripcion = libro.descripcion || '';
+
+                        html += `
+                    <div class="col-md-4">
+                        <div class="card h-100 border-0 shadow-sm libro-card" style="cursor: pointer; border-radius: 12px; overflow: hidden;" 
+                             data-titulo="${libro.titulo.replace(/"/g, '&quot;')}"
+                             data-autor="${autor.replace(/"/g, '&quot;')}"
+                             data-portada="${tieneImagen ? portada : ''}"
+                             data-anio="${anio}"
+                             data-descripcion="${descripcion.replace(/"/g, '&quot;').replace(/\n/g, ' ')}"
+                             onclick="seleccionarLibroData(this)">
+                            <div class="position-relative" style="height: 100px; background: linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 100%);">
+                                ${tieneImagen
+                                ? `<img src="${portada}" class="w-100 h-100" style="object-fit: cover;" onerror="this.style.display='none'">`
+                                : `<div class="d-flex align-items-center justify-content-center h-100"><i class="bi bi-book display-5 text-primary opacity-25"></i></div>`}
+                            </div>
+                            <div class="card-body p-2">
+                                <h6 class="fw-bold mb-1" style="font-size: 0.8rem;">${libro.titulo.length > 25 ? libro.titulo.substring(0, 25) + '...' : libro.titulo}</h6>
+                                <small class="text-muted d-block">${autor.length > 20 ? autor.substring(0, 20) + '...' : autor}</small>
+                                ${anio ? `<small class="text-info">${anio}</small>` : ''}
+                            </div>
+                        </div>
+                    </div>`;
+                    });
+                    html += '</div>';
+                    html += '<p class="text-center text-muted small mt-3"><i class="bi bi-hand-index me-1"></i>Haz clic para seleccionar</p>';
+                    resultadosDiv.innerHTML = html;
+                } else {
+                    resultadosDiv.innerHTML = '<div class="alert alert-warning"><i class="bi bi-info-circle me-2"></i>No se encontró. Puedes llenar los datos manualmente.</div>';
+                }
+            })
+            .catch(error => {
+                resultadosDiv.innerHTML = '<div class="alert alert-danger"><i class="bi bi-exclamation-triangle me-2"></i>Error de conexión</div>';
+            });
+    }
+
+    function seleccionarLibroData(element) {
+        const titulo = element.dataset.titulo || '';
+        const autor = element.dataset.autor || '';
+        const portadaUrl = element.dataset.portada || '';
+        const anio = element.dataset.anio || '';
+        const descripcion = element.dataset.descripcion || '';
+        seleccionarLibro(titulo, autor, portadaUrl, anio, descripcion);
+    }
+
+    function seleccionarLibro(titulo, autor, portadaUrl, anio, descripcion) {
+        libroDeOpenLibrary = true;
+
+        // Llenar campos
+        document.getElementById('id_titulo').value = titulo;
+        document.getElementById('id_titulo').readOnly = true;
+        document.getElementById('id_titulo').style.background = '#f0fdf4';
+        document.getElementById('id_titulo').style.border = '2px solid #86efac';
+
+        // Autor - mostrar como solo lectura
+        document.getElementById('autor_select_wrapper').style.display = 'none';
+        document.getElementById('autor_readonly_wrapper').style.display = 'block';
+        document.getElementById('id_autor_readonly').value = autor;
+        document.getElementById('autor_nombre_input').value = autor;
+        document.getElementById('id_autor').required = false;  // Quitar required del select
+
+        // Año
+        if (anio && anio !== 'N/A') {
+            document.getElementById('id_anio').value = anio;
+            document.getElementById('id_anio').readOnly = true;
+            document.getElementById('id_anio').style.background = '#f0fdf4';
+            document.getElementById('id_anio').style.border = '2px solid #86efac';
+        }
+
+        // Descripción
+        if (descripcion) {
+            document.getElementById('id_descripcion').value = descripcion;
+            document.getElementById('id_descripcion').readOnly = true;
+            document.getElementById('id_descripcion').style.background = '#f0fdf4';
+            document.getElementById('id_descripcion').style.border = '2px solid #86efac';
+        }
+
+        // Imagen
+        const previewDiv = document.getElementById('preview_imagen');
+        const imgPreview = document.getElementById('img_preview');
+        const imagenUrlInput = document.getElementById('imagen_url_input');
+
+        if (portadaUrl && portadaUrl !== '') {
+            imgPreview.src = portadaUrl;
+            imagenUrlInput.value = portadaUrl;
+            previewDiv.style.display = 'block';
+            document.getElementById('imagen_manual_wrapper').style.display = 'none';
+        }
+
+        // Marcar como de OpenLibrary
+        document.getElementById('es_openlibrary_input').value = 'true';
+
+        // Limpiar resultados
+        document.getElementById('resultados_busqueda').innerHTML = '';
+    }
+
+    function limpiarSeleccion() {
+        libroDeOpenLibrary = false;
+
+        // Restaurar todos los campos
+        document.getElementById('id_titulo').value = '';
+        document.getElementById('id_titulo').readOnly = false;
+        document.getElementById('id_titulo').style.background = '';
+        document.getElementById('id_titulo').style.border = '';
+
+        document.getElementById('autor_select_wrapper').style.display = 'block';
+        document.getElementById('autor_readonly_wrapper').style.display = 'none';
+        document.getElementById('autor_nombre_input').value = '';
+        document.getElementById('id_autor').required = true;
+        document.getElementById('id_autor').value = '';
+
+        document.getElementById('id_anio').value = '';
+        document.getElementById('id_anio').readOnly = false;
+        document.getElementById('id_anio').style.background = '';
+        document.getElementById('id_anio').style.border = '';
+
+        document.getElementById('preview_imagen').style.display = 'none';
+        document.getElementById('imagen_url_input').value = '';
+        document.getElementById('imagen_manual_wrapper').style.display = 'block';
+        document.getElementById('es_openlibrary_input').value = 'false';
+    }
+</script>
+
+<style>
+    .libro-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+        transition: all 0.2s;
+    }
+</style>
+{% endblock %}

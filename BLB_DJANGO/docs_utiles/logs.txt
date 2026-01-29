@@ -1,0 +1,20 @@
+# =====================================================
+# REGISTRO DE ACTIVIDAD DEL SISTEMA - BIBLIOTECH
+# =====================================================
+# Este archivo almacena un historial de todas las acciones
+# realizadas en el sistema. Cada línea representa una acción.
+#
+# Formato: [FECHA HORA] | Usuario: XXX | Acción: XXX | Descripción | IP: XXX | URL: XXX
+# =====================================================
+
+[08/01/2026 05:15:01] | Usuario: meli | Acción: REGISTRO | Nuevo usuario registrado: meli con rol bibliotecario | IP: 127.0.0.1 | URL: /registro/
+[08/01/2026 05:24:18] | Usuario: meli | Acción: CREAR | Creó préstamo #5 de "Harry Potter and the Order of the Phoenix" para joelpinargote | IP: 127.0.0.1 | URL: /prestamos/nuevo/
+[08/01/2026 09:12:01] | Usuario: RAHI | Acción: REGISTRO | Nuevo usuario registrado: RAHI con rol usuario | IP: 127.0.0.1 | URL: /registro/
+[08/01/2026 09:13:12] | Usuario: RAHI | Acción: CREAR | Solicitó préstamo del libro "The Chalk Man" por 3 días | IP: 127.0.0.1 | URL: /solicitar-prestamo/
+[08/01/2026 09:15:00] | Usuario: josue | Acción: REGISTRO | Nuevo usuario registrado: josue con rol bodeguero | IP: 127.0.0.1 | URL: /registro/
+[08/01/2026 09:16:53] | Usuario: josue | Acción: CREAR | Creó libro: The Complete Illustrated Kama Sutra | IP: 127.0.0.1 | URL: /libros/nuevo/
+[08/01/2026 09:18:40] | Usuario: biblio | Acción: REGISTRO | Nuevo usuario registrado: biblio con rol bibliotecario | IP: 127.0.0.1 | URL: /registro/
+[08/01/2026 09:20:06] | Usuario: biblio | Acción: APROBAR | Aprobó solicitud #5 de RAHI para "The Chalk Man" | IP: 127.0.0.1 | URL: /solicitudes/5/aprobar/
+[08/01/2026 09:21:06] | Usuario: biblio | Acción: EDITAR | Devolvió libro "The Chalk Man" del préstamo #6. Estado: deterioro | IP: 127.0.0.1 | URL: /prestamos/6/devolver/
+[12/01/2026 10:27:12] | Usuario: michael | Acción: REGISTRO | Nuevo usuario registrado: michael con rol bodeguero | IP: 127.0.0.1 | URL: /registro/
+[12/01/2026 10:40:09] | Usuario: Joel | Acción: EDITAR | Devolvió libro "The Chalk Man" del préstamo #4. Estado: deterioro | IP: 127.0.0.1 | URL: /prestamos/4/devolver/

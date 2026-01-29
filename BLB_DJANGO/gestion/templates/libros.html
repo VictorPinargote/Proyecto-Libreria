@@ -1,0 +1,195 @@
+{% extends "index.html" %}
+
+{% block contenido %}
+<div class="col-12">
+    <!-- Main Container with modern backdrop -->
+    <div class="card border-0 shadow-lg" style="border-radius: 30px; overflow: hidden; background-color: #f8fafc;">
+
+        <!-- Header Section -->
+        <div class="card-header position-relative border-0 py-5"
+            style="background: linear-gradient(120deg, #2563eb 0%, #7c3aed 100%); overflow: hidden;">
+
+
+
+            <div class="container position-relative z-index-1">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                    <div class="text-white">
+                        <h2 class="fw-bold mb-1 display-6">
+                            <i class="bi bi-collection-play me-2"></i>Biblioteca Digital
+                        </h2>
+                        <p class="mb-0 fs-5 opacity-75 fw-light">Explora y gestiona tu colección literaria</p>
+                    </div>
+                    {% if puede_gestionar_libros %}
+                    <a href="{% url 'crear_libro' %}"
+                        class="btn btn-light btn-lg rounded-pill px-4 fw-bold shadow-sm d-flex align-items-center gap-2 hover-scale">
+                        <i class="bi bi-plus-lg text-primary"></i>
+                        <span>Nuevo Libro</span>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Books Grid -->
+        <div class="card-body p-4 p-md-5">
+            {% if libros %}
+            <div class="row g-4">
+                {% for libro in libros %}
+                <div class="col-sm-6 col-md-4 col-xl-3">
+                    <a href="{% url 'detalle_libro' libro.id %}" class="text-decoration-none text-dark">
+                        <div class="card h-100 border-0 shadow-sm book-card position-relative bg-white">
+
+                            <!-- Status Badge (Floating) -->
+                            <div class="position-absolute top-0 end-0 m-3 z-index-2">
+                                {% if libro.disponible %}
+                                <span class="badge rounded-pill bg-success bg-gradient shadow-sm px-3 py-2">
+                                    <i class="bi bi-check-lg me-1"></i>Disponible
+                                </span>
+                                {% else %}
+                                <span class="badge rounded-pill bg-danger bg-gradient shadow-sm px-3 py-2">
+                                    <i class="bi bi-clock-history me-1"></i>Prestado
+                                </span>
+                                {% endif %}
+                            </div>
+
+                            <!-- Image Container -->
+                            <div class="card-img-top position-relative overflow-hidden bg-light d-flex align-items-center justify-content-center"
+                                style="height: 260px; border-radius: 20px 20px 0 0;">
+                                {% if libro.imagen %}
+                                <img src="{{ libro.imagen.url }}" alt="{{ libro.titulo }}"
+                                    class="w-100 h-100 object-fit-cover transition-transform">
+                                {% else %}
+                                <div class="text-center p-4 opacity-50">
+                                    <i class="bi bi-journal-album display-1 text-secondary"></i>
+                                    <p class="small fw-semibold mt-2 text-secondary">Sin Portada</p>
+                                </div>
+                                <!-- Decorative gradient overlay for missing images -->
+                                <div class="position-absolute top-0 start-0 w-100 h-100"
+                                    style="background: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.05) 100%);">
+                                </div>
+                                {% endif %}
+
+                                <!-- Hover Overlay -->
+                                <div
+                                    class="book-overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center opacity-0 transition-opacity">
+                                    <span class="btn btn-light rounded-circle shadow p-3">
+                                        <i class="bi bi-eye-fill text-primary fs-4"></i>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Content -->
+                            <div class="card-body p-4">
+                                <!-- Categories/Tags (Optional placeholder) -->
+                                <div class="mb-2">
+                                    <span
+                                        class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-2 py-1 small">
+                                        {{ libro.anio_publicacion|default:"General" }}
+                                    </span>
+                                </div>
+
+                                <h5 class="card-title fw-bold mb-2 text-truncate-2"
+                                    style="font-size: 1.1rem; min-height: 2.8rem; line-height: 1.4;">
+                                    {{ libro.titulo }}
+                                </h5>
+
+                                <div class="d-flex align-items-center text-muted mb-3">
+                                    <i class="bi bi-person-circle me-2 text-secondary"></i>
+                                    <span class="small fw-medium text-truncate">{{ libro.autor.nombre }} {{
+                                        libro.autor.apellido }}</span>
+                                </div>
+
+                                <hr class="border-secondary opacity-10 my-3">
+
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted fw-bold">
+                                        <i class="bi bi-box-seam me-1 text-warning"></i>Stock: {{ libro.stock }}
+                                    </small>
+                                    <div
+                                        class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1 fw-semibold small-btn">
+                                        Ver Detalle
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <!-- Empty State -->
+            <div class="text-center py-5">
+                <div class="mb-4 position-relative d-inline-block">
+                    <div class="position-absolute top-50 start-50 translate-middle bg-primary opacity-10 rounded-circle"
+                        style="width: 120px; height: 120px;"></div>
+                    <i class="bi bi-journal-bookmark display-1 text-primary position-relative z-index-1"></i>
+                </div>
+                <h3 class="fw-bold text-dark mb-2">Tu biblioteca está vacía</h3>
+                <p class="text-muted mb-4 fs-5">Parece que aún no has agregado ningún libro a la colección.</p>
+                {% if puede_ver_autores %}
+                <a href="{% url 'crear_libro' %}" class="btn btn-primary btn-lg rounded-pill px-5 shadow hover-scale">
+                    <i class="bi bi-plus-circle me-2"></i>Agregar Primer Libro
+                </a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Custom Styles for Books Page */
+    .hover-scale {
+        transition: transform 0.2s ease;
+    }
+
+    .hover-scale:hover {
+        transform: scale(1.05);
+    }
+
+    .book-card {
+        border-radius: 20px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        background: #ffffff;
+    }
+
+    .book-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12) !important;
+    }
+
+    .text-truncate-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .object-fit-cover {
+        object-fit: cover;
+    }
+
+    .book-card:hover .book-overlay {
+        opacity: 1 !important;
+        background: rgba(30, 64, 175, 0.3);
+        /* Blue tinted overlay */
+        backdrop-filter: blur(2px);
+    }
+
+    .transition-opacity {
+        transition: opacity 0.3s ease;
+    }
+
+    .transition-transform {
+        transition: transform 0.5s ease;
+    }
+
+    .book-card:hover img {
+        transform: scale(1.1);
+    }
+
+    .small-btn {
+        font-size: 0.8rem;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Biblioteca</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f1f5f9;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: #1e3a8a;
+            padding: 1rem 0;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            color: #fff !important;
+            font-size: 1.4rem;
+        }
+
+        .nav-link {
+            color: rgba(255, 255, 255, 0.85) !important;
+            font-weight: 500;
+            margin: 0 8px;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: #60a5fa !important;
+        }
+
+        .hero-section {
+            background: #1e3a8a;
+            color: white;
+            padding: 60px 0;
+            border-radius: 0 0 30px 30px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            transition: all 0.3s;
+        }
+
+        .icon-box {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .bg-books {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .bg-authors {
+            background: #cffafe;
+            color: #0369a1;
+        }
+
+        .bg-loans {
+            background: #fed7aa;
+            color: #c2410c;
+        }
+
+        .bg-fines {
+            background: #fecaca;
+            color: #dc2626;
+        }
+
+        .btn-custom {
+            background: #1e40af;
+            color: white;
+            border-radius: 25px;
+            padding: 8px 20px;
+            border: none;
+            font-weight: 600;
+        }
+
+        .btn-custom:hover {
+            background: #2563eb;
+            color: white;
+        }
+
+        footer {
+            background: #1f2937;
+            color: #d1d5db;
+            margin-top: 50px;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: rgba(30, 58, 138, 0.06);
+        }
+
+        .badge {
+            padding: 0.4rem 0.8rem;
+            font-weight: 600;
+            border-radius: 20px;
+        }
+    </style>
+</head>
+
+<body class="d-flex flex-column min-vh-100">
+
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'index' %}">
+                <i class="bi bi-book-half me-2"></i>BiblioTech
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+                <ul class="navbar-nav align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'index' %}">Inicio</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'lista_libros' %}">Libros</a>
+                    </li>
+
+                    {% if puede_ver_autores %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'lista_autores' %}">Autores</a>
+                    </li>
+                    {% endif %}
+
+                    {% if puede_ver_prestamos %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'lista_prestamos' %}">Préstamos</a>
+                    </li>
+                    {% endif %}
+
+                    {% if puede_ver_multas %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'lista_multas' %}">Multas</a>
+                    </li>
+                    {% endif %}
+
+                    <!-- API ACCESS (Nuevo) -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'api_dashboard' %}">API</a>
+                    </li>
+
+                    {% if puede_ver_solicitudes %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                            <i class="bi bi-journal-bookmark me-1"></i>Solicitudes
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            {% if rol_usuario == 'usuario' %}
+                            <li>
+                                <a class="dropdown-item" href="{% url 'crear_solicitud' %}">
+                                    <i class="bi bi-plus-circle me-2"></i>Solicitar Préstamo
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'mis_solicitudes' %}">
+                                    <i class="bi bi-list-check me-2"></i>Mis Solicitudes
+                                </a>
+                            </li>
+                            {% endif %}
+                            {% if puede_gestionar_solicitudes %}
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'lista_solicitudes' %}">
+                                    <i class="bi bi-gear me-2"></i>Gestionar Solicitudes
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </li>
+                    {% endif %}
+
+                    {% if puede_ver_usuarios %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'lista_usuarios' %}">
+                            <i class="bi bi-people me-1"></i>Usuarios
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% if puede_ver_logs %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'lista_logs' %}">
+                            <i class="bi bi-activity me-1"></i>Logs
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% if user.is_authenticated %}
+                    <li class="nav-item ms-2">
+                        <span class="nav-link text-light">
+                            Hola, {{ user.first_name|default:user.username }}
+                            <span class="badge bg-info ms-1">{{ rol_display }}</span>
+                        </span>
+                    </li>
+                    <li class="nav-item ms-2">
+                        <form method="post" action="{% url 'logout' %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-custom btn-sm">Cerrar Sesión</button>
+                        </form>
+                    </li>
+                    {% else %}
+                    <li class="nav-item ms-2">
+                        <a class="nav-link" href="{% url 'login' %}">Iniciar Sesión</a>
+                    </li>
+                    <li class="nav-item ms-2">
+                        <a class="nav-link" href="{% url 'registro' %}">Registro</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <header class="hero-section text-center pt-5 mt-5">
+        <div class="container pt-4">
+            <h1 class="display-5 fw-bold">Sistema de Biblioteca</h1>
+            <p class="lead opacity-75">Administra libros, préstamos y multas fácilmente.</p>
+        </div>
+    </header>
+
+    <main class="container mb-5">
+        <div class="row g-4">
+            {% block contenido %}{% endblock %}
+        </div>
+    </main>
+
+    <footer class="text-center py-4 mt-auto" style="background: #1e293b;">
+        <div class="container">
+            <small>&copy; 2024 BiblioTech. Todos los derechos reservados.</small>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

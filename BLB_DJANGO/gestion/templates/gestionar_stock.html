@@ -1,0 +1,83 @@
+{% extends "index.html" %}
+
+{% block contenido %}
+<div class="col-12">
+    <div class="card shadow border-0 rounded-4">
+        <div class="card-header text-white py-4" style="background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h3 class="mb-0 fw-bold">
+                        <i class="bi bi-box-seam me-2"></i>Gestión de Stock
+                    </h3>
+                    <p class="mb-0 mt-1 opacity-75">Control de inventario de libros</p>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-4">
+            {% if puede_editar %}
+            <div class="alert alert-success mb-4">
+                <i class="bi bi-pencil me-2"></i>Puedes editar el stock de cada libro directamente.
+            </div>
+            {% else %}
+            <div class="alert alert-info mb-4">
+                <i class="bi bi-eye me-2"></i>Solo tienes permiso para ver el stock. Solo el bodeguero puede
+                modificarlo.
+            </div>
+            {% endif %}
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Libro</th>
+                            <th>Autor</th>
+                            <th>Disponible</th>
+                            <th class="text-center">Stock</th>
+                            {% if puede_editar %}<th class="text-center">Acción</th>{% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for libro in libros %}
+                        <tr>
+                            <td><strong>{{ libro.titulo }}</strong></td>
+                            <td>{{ libro.autor.nombre }} {{ libro.autor.apellido }}</td>
+                            <td>
+                                {% if libro.disponible %}
+                                <span class="badge bg-success">Disponible</span>
+                                {% else %}
+                                <span class="badge bg-secondary">No disponible</span>
+                                {% endif %}
+                            </td>
+                            {% if puede_editar %}
+                            <form method="POST">
+                                {% csrf_token %}
+                                <input type="hidden" name="libro_id" value="{{ libro.id }}">
+                                <td class="text-center">
+                                    <input type="number" name="stock" value="{{ libro.stock }}"
+                                        class="form-control form-control-sm text-center"
+                                        style="width: 80px; display: inline-block;" min="0">
+                                </td>
+                                <td class="text-center">
+                                    <button type="submit" class="btn btn-success btn-sm">
+                                        <i class="bi bi-check-lg"></i> Guardar
+                                    </button>
+                                </td>
+                            </form>
+                            {% else %}
+                            <td class="text-center">
+                                <span class="badge bg-primary fs-6">{{ libro.stock }}</span>
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">No hay libros registrados</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,95 @@
+{% extends "index.html" %}
+
+{% block contenido %}
+<div class="col-12">
+    <div class="card shadow-sm" style="max-width: 600px; margin: 0 auto;">
+        <!-- Header -->
+        <div class="card-header text-white py-3 text-center" style="background: #dc2626; border-radius: 16px 16px 0 0;">
+            <h4 class="mb-0 fw-bold">
+                <i class="bi bi-exclamation-octagon-fill me-2"></i>Crear Nueva Multa
+            </h4>
+        </div>
+
+        <!-- Body -->
+        <div class="card-body p-4">
+            <!-- Info del Préstamo -->
+            <div class="alert alert-warning rounded-3 mb-4">
+                <h6 class="fw-bold mb-2"><i class="bi bi-info-circle me-2"></i>Préstamo Asociado</h6>
+                <p class="mb-1"><strong>Libro:</strong> {{ prestamo.libro.titulo }}</p>
+                <p class="mb-1"><strong>Usuario:</strong> {{ prestamo.usuario.username }}</p>
+                <p class="mb-0"><strong>Días de retraso:</strong>
+                    <span class="badge bg-danger">{{ prestamo.dias_retraso }}</span>
+                </p>
+            </div>
+
+            <form method="POST">
+                {% csrf_token %}
+
+                <div class="mb-4">
+                    <label for="id_tipo" class="form-label fw-semibold">
+                        <i class="bi bi-tags-fill me-2 text-danger"></i>Tipo de Multa
+                    </label>
+                    <select id="id_tipo" name="tipo" class="form-select form-select-lg rounded-3" required
+                        onchange="updateMonto()">
+                        <option value="">-- Seleccione el tipo --</option>
+                        <option value="r" data-monto="{{ prestamo.multa_retraso }}">
+                            Retraso (${{ prestamo.multa_retraso }})
+                        </option>
+                        <option value="p" data-monto="20.00">Pérdida del Libro ($20.00)</option>
+                        <option value="d" data-monto="10.00">Deterioro del Libro ($10.00)</option>
+                    </select>
+                    <div class="form-text mt-2">
+                        <i class="bi bi-lightbulb me-1"></i>Si seleccionas "Retraso", el monto se calcula
+                        automáticamente
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="id_monto" class="form-label fw-semibold">
+                        <i class="bi bi-currency-dollar me-2 text-danger"></i>Monto de la Multa
+                    </label>
+                    <div class="input-group input-group-lg">
+                        <span class="input-group-text rounded-start-3 bg-light">$</span>
+                        <input type="number" id="id_monto" name="monto" class="form-control rounded-end-3"
+                            placeholder="0.00" step="0.01" min="0">
+                    </div>
+                </div>
+
+                <div class="alert alert-danger rounded-3 mb-4">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <strong>Importante:</strong> Verifica el estado del libro antes de aplicar multas.
+                </div>
+
+                <div class="d-grid gap-2 mt-4">
+                    <button type="submit" class="btn btn-danger btn-lg rounded-pill fw-bold">
+                        <i class="bi bi-check2-circle me-2"></i>Aplicar Multa
+                    </button>
+                    <a href="{% url 'detalle_prestamo' prestamo.id %}"
+                        class="btn btn-outline-secondary btn-lg rounded-pill">
+                        <i class="bi bi-x-circle me-2"></i>Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function updateMonto() {
+        const tipoSelect = document.getElementById('id_tipo');
+        const montoInput = document.getElementById('id_monto');
+        const selectedOption = tipoSelect.options[tipoSelect.selectedIndex];
+        const monto = selectedOption.getAttribute('data-monto');
+
+        if (monto) {
+            montoInput.value = monto;
+            montoInput.readOnly = true;
+            montoInput.style.backgroundColor = '#f3f4f6';
+        } else {
+            montoInput.value = '';
+            montoInput.readOnly = false;
+            montoInput.style.backgroundColor = 'white';
+        }
+    }
+</script>
+{% endblock %}

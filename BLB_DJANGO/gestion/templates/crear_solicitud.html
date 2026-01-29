@@ -1,0 +1,80 @@
+{% extends "index.html" %}
+
+{% block contenido %}
+<div class="col-12">
+    <div class="card shadow border-0 rounded-4" style="max-width: 700px; margin: 0 auto;">
+        <div class="card-header text-white py-4 text-center"
+            style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <h3 class="mb-0 fw-bold">
+                <i class="bi bi-book me-2"></i>Solicitar Préstamo
+            </h3>
+            <p class="mb-0 mt-2 opacity-75">Selecciona un libro para solicitar el préstamo</p>
+        </div>
+        <div class="card-body p-4">
+            {% if error %}
+            <div class="alert alert-danger" role="alert">
+                <i class="bi bi-exclamation-triangle me-2"></i>{{ error }}
+            </div>
+            {% endif %}
+
+            <form method="POST">
+                {% csrf_token %}
+
+                <!-- Selección de Libro -->
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">
+                        <i class="bi bi-book me-1"></i>Libro a Solicitar
+                    </label>
+                    <select name="libro" class="form-select form-select-lg" required>
+                        <option value="">-- Selecciona un libro --</option>
+                        {% for libro in libros %}
+                        <option value="{{ libro.id }}">
+                            📖 {{ libro.titulo }} - {{ libro.autor }}
+                        </option>
+                        {% empty %}
+                        <option value="" disabled>No hay libros disponibles</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Días de Préstamo -->
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">
+                        <i class="bi bi-calendar me-1"></i>Días de Préstamo
+                    </label>
+                    <select name="dias" class="form-select">
+                        <option value="3">3 días</option>
+                        <option value="7" selected>7 días (1 semana)</option>
+                        <option value="14">14 días (2 semanas)</option>
+                        <option value="21">21 días (3 semanas)</option>
+                        <option value="30">30 días (1 mes)</option>
+                    </select>
+                    <small class="text-muted">El bibliotecario aprobará tu solicitud</small>
+                </div>
+
+                <!-- Información -->
+                <div class="alert alert-info mb-4">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong>¿Cómo funciona?</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>Tu solicitud será revisada por un bibliotecario</li>
+                        <li>Recibirás notificación cuando sea aprobada o rechazada</li>
+                        <li>Si es aprobada, el préstamo se creará automáticamente</li>
+                    </ul>
+                </div>
+
+                <!-- Botones -->
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-lg rounded-pill fw-bold"
+                        style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                        <i class="bi bi-send me-2"></i>Enviar Solicitud
+                    </button>
+                    <a href="{% url 'mis_solicitudes' %}" class="btn btn-outline-secondary rounded-pill">
+                        <i class="bi bi-list-ul me-2"></i>Ver Mis Solicitudes
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

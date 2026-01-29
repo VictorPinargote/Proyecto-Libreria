@@ -1,0 +1,135 @@
+{% extends 'gestion/templates/index.html' %} 
+
+{% block contenido %}
+<div class="col-lg-8 mx-auto">
+    <div class="d-flex align-items-center mb-4">
+        <a href="{% url 'api_gestion_libros' %}" class="btn btn-outline-light text-dark me-3 rounded-circle" style="width:40px;height:40px;display:grid;place-items:center;">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+        <h2 class="fw-bold text-primary mb-0">Agregar Nuevo Libro</h2>
+    </div>
+
+    <div class="card border-0 shadow-lg overflow-hidden">
+        <div class="card-header bg-primary text-white p-4">
+            <h5 class="mb-0"><i class="bi bi-magic me-2"></i>Autocompletado Inteligente</h5>
+            <p class="mb-0 small opacity-75">Ingresa un ISBN o Título para buscar en OpenLibrary.</p>
+        </div>
+        
+        <div class="card-body p-4 bg-light border-bottom">
+            <div class="input-group input-group-lg">
+                <span class="input-group-text bg-white border-end-0 text-primary"><i class="bi bi-search"></i></span>
+                <input type="text" id="busquedaOpenLibrary" class="form-control border-start-0" placeholder="Ej: 9780140328721 o The Little Prince">
+                <button class="btn btn-dark px-4" type="button" onclick="buscarLibro()">
+                    Buscar en OpenLibrary
+                </button>
+            </div>
+            <div id="feedbackBusqueda" class="mt-2 small fw-bold"></div>
+        </div>
+
+        <div class="card-body p-4">
+            <form method="POST">
+                {% csrf_token %}
+                <div class="row g-3">
+                    <!-- Portada (Hidden URL) -->
+                    <input type="hidden" name="cover_url" id="cover_url">
+                    
+                    <div class="col-12 text-center mb-3" id="previewCoverContainer" style="display:none;">
+                        <img id="previewCover" src="" class="rounded shadow" style="height: 150px;">
+                    </div>
+
+                    <div class="col-md-12">
+                        <label class="form-label fw-bold">Título del Libro</label>
+                        <input type="text" name="titulo" id="titulo" class="form-control form-control-lg bg-light" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">ISBN</label>
+                        <input type="text" name="isbn" id="isbn" class="form-control bg-light" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Autor</label>
+                        <input type="text" name="autor" id="autor" class="form-control bg-light" placeholder="Nombre Apellido" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Editorial</label>
+                        <input type="text" name="editorial" id="editorial" class="form-control bg-light">
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Páginas</label>
+                        <input type="number" name="paginas" id="paginas" class="form-control bg-light">
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Año Publicación</label>
+                        <input type="number" name="anio_publicacion" id="anio_publicacion" class="form-control bg-light" placeholder="Ej: 2005">
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Stock Inicial</label>
+                        <input type="number" name="stock" value="1" min="1" class="form-control bg-light">
+                    </div>
+
+                    <div class="col-12 mt-4">
+                        <button type="submit" class="btn btn-primary w-100 btn-lg rounded-pill fw-bold shadow-sm">
+                            <i class="bi bi-save me-2"></i>Guardar en Biblioteca
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    async function buscarLibro() {
+        const query = document.getElementById('busquedaOpenLibrary').value;
+        const feedback = document.getElementById('feedbackBusqueda');
+        const btn = document.querySelector('button[onclick="buscarLibro()"]');
+        
+        if (!query) return;
+
+        // UI Loading
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Buscando...';
+        feedback.className = 'mt-2 small text-muted';
+        feedback.innerText = '';
+
+        try {
+            const response = await fetch(`/api/proxy/openlibrary/?q=${encodeURIComponent(query)}`);
+            const data = await response.json();
+
+            if (response.ok) {
+                // Llenar campos
+                document.getElementById('titulo').value = data.titulo || '';
+                document.getElementById('isbn').value = data.isbn || '';
+                document.getElementById('autor').value = data.autor || '';
+                document.getElementById('editorial').value = data.editorial || '';
+                document.getElementById('paginas').value = data.paginas || '';
+                document.getElementById('anio_publicacion').value = data.anio || '';
+                document.getElementById('cover_url').value = data.cover || '';
+
+                // Mostrar portada
+                if (data.cover) {
+                    document.getElementById('previewCover').src = data.cover;
+                    document.getElementById('previewCoverContainer').style.display = 'block';
+                }
+
+                feedback.className = 'mt-2 small text-success';
+                feedback.innerHTML = '<i class="bi bi-check-circle-fill"></i> Libro encontrado y datos cargados.';
+            } else {
+                feedback.className = 'mt-2 small text-danger';
+                feedback.innerText = 'No se encontró el libro. Intenta con otro término.';
+            }
+        } catch (error) {
+            feedback.className = 'mt-2 small text-danger';
+            feedback.innerText = 'Error de conexión con OpenLibrary.';
+        } finally {
+            btn.disabled = false;
+            btn.innerText = 'Buscar en OpenLibrary';
+        }
+    }
+</script>
+{% endblock %}

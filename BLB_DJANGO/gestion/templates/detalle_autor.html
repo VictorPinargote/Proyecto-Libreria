@@ -1,0 +1,97 @@
+{% extends "index.html" %}
+
+{% block contenido %}
+<div class="col-12 py-5">
+    <div class="container">
+        <!-- Back Button -->
+        <a href="{% url 'lista_autores' %}" class="btn btn-outline-secondary rounded-pill mb-4">
+            <i class="bi bi-arrow-left me-2"></i>Volver al Directorio
+        </a>
+
+        <div class="row g-4 justify-content-center">
+            <!-- Author Card -->
+            <div class="col-lg-10">
+                <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                    <div class="row g-0">
+                        <!-- Left Side: Profile Aesthetic -->
+                        <div class="col-md-4 bg-light d-flex align-items-center justify-content-center p-5 text-center position-relative overflow-hidden"
+                            style="background: linear-gradient(135deg, #e0f2fe 0%, #0ea5e9 100%);">
+
+                            <!-- Abstract Circles -->
+                            <div class="position-absolute top-0 start-0 translate-middle p-5 rounded-circle bg-white opacity-10"
+                                style="width: 200px; height: 200px;"></div>
+                            <div class="position-absolute bottom-0 end-0 translate-middle p-5 rounded-circle bg-white opacity-10"
+                                style="width: 150px; height: 150px;"></div>
+
+                            <div class="position-relative z-index-1">
+                                <div class="avatar-circle bg-white text-info display-1 fw-bold shadow-sm d-flex align-items-center justify-content-center rounded-circle mx-auto mb-3"
+                                    style="width: 120px; height: 120px;">
+                                    {{ autor.nombre.0 }}{{ autor.apellido.0 }}
+                                </div>
+                                <h3 class="fw-bold text-white mb-1">{{ autor.nombre }}</h3>
+                                <h4 class="fw-light text-white mb-0">{{ autor.apellido }}</h4>
+                            </div>
+                        </div>
+
+                        <!-- Right Side: Info -->
+                        <div class="col-md-8 p-4 p-lg-5">
+                            <div class="d-flex justify-content-between align-items-start mb-4">
+                                <div>
+                                    <h5 class="text-uppercase text-muted small fw-bold mb-2">Biografía</h5>
+                                    {% if autor.bibliografia %}
+                                    <p class="lead text-dark" style="font-size: 1.1rem; line-height: 1.6;">
+                                        {{ autor.bibliografia }}
+                                    </p>
+                                    {% else %}
+                                    <p class="text-muted fst-italic">No hay biografía disponible para este autor.</p>
+                                    {% endif %}
+                                </div>
+
+                                {% if puede_gestionar %}
+                                <!-- Edit Button only for Bodeguero -->
+                                <a href="{% url 'editar_autor' autor.id %}"
+                                    class="btn btn-outline-primary rounded-pill btn-sm ms-3">
+                                    <i class="bi bi-pencil-fill me-1"></i>Editar
+                                </a>
+                                {% endif %}
+                            </div>
+
+                            <hr class="my-4 opacity-10">
+
+                            <!-- Books by Author -->
+                            <h5 class="text-uppercase text-muted small fw-bold mb-3">
+                                <i class="bi bi-journal-bookmark-fill me-2 text-info"></i>Libros Registrados ({{
+                                libros.count }})
+                            </h5>
+
+                            {% if libros %}
+                            <div class="list-group list-group-flush border rounded-4 overflow-hidden">
+                                {% for libro in libros %}
+                                <a href="{% url 'detalle_libro' libro.id %}"
+                                    class="list-group-item list-group-item-action p-3 d-flex align-items-center justify-content-between hover-bg-light">
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-3 bg-light rounded px-2 py-1 text-secondary">
+                                            <i class="bi bi-book"></i>
+                                        </div>
+                                        <span class="fw-medium text-dark">{{ libro.titulo }}</span>
+                                    </div>
+                                    <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill">
+                                        {{ libro.anio_publicacion|default:"-" }}
+                                    </span>
+                                </a>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <div class="alert alert-light border-0 text-center text-muted">
+                                <i class="bi bi-journal-x display-6 mb-2"></i>
+                                <p class="mb-0">Este autor no tiene libros registrados en la biblioteca aún.</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,62 @@
+DJANGO CONTRASEÑA Y USUARIO POR SI NO TE ACUERDAS
+------> ojo es solo para el admin osea esta paguina http://localhost:8000/admin/
+
+USUARIO = "joelp"
+CONTRASEÑA = "joelalvarez18"
+
+=====================================================
+SISTEMA DE ROLES - CÓDIGOS DE VERIFICACIÓN
+=====================================================
+
+| ROL           | CÓDIGO        | 
+|---------------|---------------|
+      | (no requiere) |
+| Bodeguero     | bodega76      |
+| Bibliotecario | biblio76      |
+| Admin         | admin76       |
+| Superusuario  | superuser76   |
+
+=====================================================
+PERMISOS POR ROL
+=====================================================| Usuario 
+
+USUARIO NORMAL:
+- Ver: Libros, Préstamos (los suyos), Solicitudes (crear y ver las suyas)
+- NO ve: Autores, Multas (todas)
+
+BODEGUERO:
+- Ver: Libros, Autores
+- Puede: Crear/editar libros, Crear/editar autores
+- NO ve: Préstamos, Multas, Solicitudes
+
+BIBLIOTECARIO:
+- Ver: Libros (solo ver), Préstamos, Multas, Solicitudes
+- Puede: Aprobar/rechazar solicitudes, Crear préstamos, Devolver libros, Marcar multas como pagadas
+- NO puede: Crear libros ni autores
+
+ADMIN:
+- Ver: Todo lo del bibliotecario + sección de USUARIOS
+- Puede: Todo lo del bibliotecario + Crear/editar/eliminar usuarios
+- NO puede: Crear libros (solo el bodeguero)
+
+SUPERUSUARIO:
+- Acceso TOTAL a todas las funciones
+
+=====================================================
+URLs PRINCIPALES
+=====================================================
+/libros/              - Lista de libros
+/autores/             - Lista de autores
+/prestamos/           - Lista de préstamos
+/multas/              - Lista de multas
+/solicitar-prestamo/  - Solicitar un préstamo
+/mis-solicitudes/     - Ver mis solicitudes
+/solicitudes/         - Gestionar solicitudes (staff)
+/usuarios/            - Gestionar usuarios (admin)
+/logs/                - Ver logs de actividad (admin)
+
+
+usuarios
+
+usuario = benito
+contraseña = benito123

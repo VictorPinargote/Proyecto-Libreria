@@ -1,0 +1,86 @@
+{% extends "index.html" %}
+
+{% block contenido %}
+<div class="col-12">
+    <div class="card shadow border-0 rounded-4">
+        <div class="card-header text-white py-4" style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h3 class="mb-0 fw-bold">
+                        <i class="bi bi-people-fill me-2"></i>Gestión de Usuarios
+                    </h3>
+                    <p class="mb-0 mt-1 opacity-75">Administra los usuarios del sistema</p>
+                </div>
+                <a href="{% url 'crear_usuario' %}" class="btn btn-light rounded-pill">
+                    <i class="bi bi-person-plus me-1"></i>Nuevo Usuario
+                </a>
+            </div>
+        </div>
+        <div class="card-body p-4">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Usuario</th>
+                            <th>Nombre</th>
+                            <th>Email</th>
+                            <th>Cédula</th>
+                            <th>Rol</th>
+                            <th>Fecha Registro</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for usuario in usuarios %}
+                        <tr>
+                            <td>
+                                <strong>@{{ usuario.username }}</strong>
+                            </td>
+                            <td>{{ usuario.first_name }} {{ usuario.last_name }}</td>
+                            <td>{{ usuario.email|default:"-" }}</td>
+                            <td>{{ usuario.perfil.cedula|default:"-" }}</td>
+                            <td>
+                                {% if usuario.perfil %}
+                                {% if usuario.perfil.rol == 'usuario' %}
+                                <span class="badge bg-secondary">{{ usuario.perfil.get_rol_display }}</span>
+                                {% elif usuario.perfil.rol == 'bodeguero' %}
+                                <span class="badge bg-warning text-dark">{{ usuario.perfil.get_rol_display }}</span>
+                                {% elif usuario.perfil.rol == 'bibliotecario' %}
+                                <span class="badge bg-info">{{ usuario.perfil.get_rol_display }}</span>
+                                {% elif usuario.perfil.rol == 'admin' %}
+                                <span class="badge bg-primary">{{ usuario.perfil.get_rol_display }}</span>
+                                {% else %}
+                                <span class="badge bg-danger">{{ usuario.perfil.get_rol_display }}</span>
+                                {% endif %}
+                                {% else %}
+                                <span class="badge bg-secondary">Sin perfil</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ usuario.date_joined|date:"d/m/Y" }}</td>
+                            <td>
+                                <a href="{% url 'editar_usuario' usuario.id %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                {% if usuario != request.user %}
+                                <form method="POST" action="{% url 'eliminar_usuario' usuario.id %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-danger"
+                                        onclick="return confirm('¿Eliminar a {{ usuario.username }}?')">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">No hay usuarios</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

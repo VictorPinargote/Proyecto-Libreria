@@ -1,0 +1,122 @@
+{% extends "index.html" %}
+
+{% block contenido %}
+<div class="col-12">
+    <div class="card shadow-sm" style="max-width: 700px; margin: 0 auto;">
+        <!-- Header -->
+        <div class="card-header text-white py-3 text-center" style="background: #0891b2; border-radius: 16px 16px 0 0;">
+            <h4 class="mb-0 fw-bold">
+                <i class="bi bi-person-plus-fill me-2"></i>{{ titulo|default:"Crear Autor" }}
+            </h4>
+        </div>
+
+        <!-- Body -->
+        <div class="card-body p-4">
+            <!-- Búsqueda OpenLibrary -->
+            <div class="mb-4 p-3 rounded-3" style="background: #ecfeff; border: 1px solid #a5f3fc;">
+                <label class="form-label fw-semibold text-info">
+                    <i class="bi bi-search me-2"></i>Buscar en OpenLibrary (opcional)
+                </label>
+                <div class="input-group">
+                    <input type="text" id="buscar_autor" class="form-control" placeholder="Buscar autor por nombre...">
+                    <button type="button" class="btn btn-info text-white" id="btn_buscar">
+                        <i class="bi bi-search"></i> Buscar
+                    </button>
+                </div>
+                <div id="resultados_busqueda" class="mt-2"></div>
+            </div>
+
+            <form method="POST">
+                {% csrf_token %}
+
+                <div class="mb-4">
+                    <label for="id_nombre" class="form-label fw-semibold">
+                        <i class="bi bi-person me-2 text-info"></i>Nombre
+                    </label>
+                    <input type="text" id="id_nombre" name="nombre" value="{{ autor.nombre|default_if_none:'' }}"
+                        class="form-control form-control-lg rounded-3" placeholder="Ej: Gabriel" required>
+                </div>
+
+                <div class="mb-4">
+                    <label for="id_apellido" class="form-label fw-semibold">
+                        <i class="bi bi-person-badge me-2 text-info"></i>Apellido
+                    </label>
+                    <input type="text" id="id_apellido" name="apellido" value="{{ autor.apellido|default_if_none:'' }}"
+                        class="form-control form-control-lg rounded-3" placeholder="Ej: García Márquez" required>
+                </div>
+
+                <div class="mb-4">
+                    <label for="id_bibliografia" class="form-label fw-semibold">
+                        <i class="bi bi-journal-text me-2 text-info"></i>Biografía
+                    </label>
+                    <textarea id="id_bibliografia" name="bibliografia" class="form-control form-control-lg rounded-3"
+                        rows="4"
+                        placeholder="Breve biografía del autor...">{{ autor.bibliografia|default_if_none:'' }}</textarea>
+                    <div class="form-text mt-2">
+                        <i class="bi bi-info-circle me-1"></i>Campo opcional
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2 mt-4">
+                    <button type="submit" class="btn btn-info btn-lg rounded-pill fw-bold text-white">
+                        <i class="bi bi-check-circle me-2"></i>{{ texto_boton|default:"Guardar" }}
+                    </button>
+                    <a href="{% url 'lista_autores' %}" class="btn btn-outline-secondary btn-lg rounded-pill">
+                        <i class="bi bi-arrow-left me-2"></i>Volver
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('btn_buscar').addEventListener('click', function () {
+        const query = document.getElementById('buscar_autor').value;
+        if (query.length < 2) {
+            alert('Escribe al menos 2 caracteres para buscar');
+            return;
+        }
+
+        const resultadosDiv = document.getElementById('resultados_busqueda');
+        resultadosDiv.innerHTML = '<div class="text-center"><i class="bi bi-hourglass-split"></i> Buscando...</div>';
+
+        fetch('/api/autores/?q=' + encodeURIComponent(query))
+            .then(response => response.json())
+            .then(data => {
+                if (data.autores && data.autores.length > 0) {
+                    let html = '<div class="list-group mt-2">';
+                    data.autores.slice(0, 5).forEach(autor => {
+                        const nombre = autor.nombre || '';
+                        const bio = autor.biografia ? autor.biografia.substring(0, 100) + '...' : 'Sin biografía';
+                        html += `<button type="button" class="list-group-item list-group-item-action" 
+                             onclick="seleccionarAutor('${nombre.replace(/'/g, "\\'")}', '${bio.replace(/'/g, "\\'")}')">
+                             <strong>${nombre}</strong>
+                             <br><small class="text-muted">${bio}</small>
+                             </button>`;
+                    });
+                    html += '</div>';
+                    resultadosDiv.innerHTML = html;
+                } else {
+                    resultadosDiv.innerHTML = '<div class="text-muted small">No se encontraron resultados</div>';
+                }
+            })
+            .catch(error => {
+                resultadosDiv.innerHTML = '<div class="text-danger small">Error al buscar</div>';
+            });
+    });
+
+    function seleccionarAutor(nombre, bio) {
+        // Separar nombre y apellido (asumiendo que el último espacio separa)
+        const partes = nombre.trim().split(' ');
+        if (partes.length >= 2) {
+            document.getElementById('id_nombre').value = partes.slice(0, -1).join(' ');
+            document.getElementById('id_apellido').value = partes[partes.length - 1];
+        } else {
+            document.getElementById('id_nombre').value = nombre;
+        }
+        document.getElementById('id_bibliografia').value = bio !== 'Sin biografía' ? bio : '';
+        document.getElementById('resultados_busqueda').innerHTML = '';
+    }
+</script>
+{% endblock %}

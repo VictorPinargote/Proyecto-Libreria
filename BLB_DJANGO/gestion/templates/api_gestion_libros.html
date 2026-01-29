@@ -1,0 +1,143 @@
+{% extends 'gestion/templates/index.html' %} 
+
+{% block contenido %}
+<div class="col-12 mb-4 d-flex justify-content-between align-items-center">
+    <div>
+        <h2 class="fw-bold text-primary mb-1">📚 Gestión de Libros (API)</h2>
+        <p class="text-muted">Administra los libros disponibles para Odoo.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'api_dashboard' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Volver a API
+        </a>
+        <a href="{% url 'api_agregar_libro' %}" class="btn btn-primary shadow-sm">
+            <i class="bi bi-plus-lg"></i> Nuevo Libro
+        </a>
+        <button class="btn btn-success shadow-sm" data-bs-toggle="modal" data-bs-target="#exportModal">
+            <i class="bi bi-cloud-download"></i> Importar
+        </button>
+    </div>
+</div>
+
+<div class="col-12">
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4">ID</th>
+                            <th>Portada</th>
+                            <th>Título</th>
+                            <th>Autor</th>
+                            <th>ISBN</th>
+                            <th>Estado API</th>
+                            <th class="text-end pe-4">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for libro in libros %}
+                        <tr>
+                            <td class="ps-4 fw-bold">#{{ libro.id }}</td>
+                            <td>
+                                {% if libro.imagen %}
+                                    <img src="{{ libro.imagen.url }}" class="rounded shadow-sm" style="width: 40px; height: 60px; object-fit: cover;">
+                                {% else %}
+                                    <div class="bg-secondary bg-opacity-10 rounded d-flex align-items-center justify-content-center text-muted" style="width: 40px; height: 60px;">
+                                        <i class="bi bi-book"></i>
+                                    </div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="fw-bold d-block text-dark">{{ libro.titulo }}</span>
+                                <small class="text-muted">{{ libro.editorial|default:"Editorial desconocida" }}</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 rounded-pill">
+                                    {{ libro.autor.nombre }} {{ libro.autor.apellido }}
+                                </span>
+                            </td>
+                            <td class="font-monospace text-secondary small">{{ libro.descripcion|slice:"6:19" }}</td>
+                            <td>
+                                <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Disponible</span>
+                            </td>
+                            <td class="text-end pe-4">
+                                <a href="/api/libros/{{ libro.id }}/" target="_blank" class="btn btn-sm btn-outline-dark" title="Ver JSON">
+                                    <i class="bi bi-code-slash"></i> JSON
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center py-5 text-muted">
+                                <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                                No hay libros registrados en el sistema.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Importación (Administrar envío a Odoo) -->
+<div class="modal fade" id="exportModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">🚀 Importar a Odoo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body py-4">
+                <div id="setupExport">
+                    <p class="text-muted small mb-3">Selecciona el libro que deseas que Odoo reconozca e importe mediante el Token.</p>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Libro a Importar</label>
+                        <select id="libroSelect" class="form-select bg-light border-0">
+                            {% for libro in libros %}
+                            <option value="{{ libro.id }}">[{{ libro.id }}] {{ libro.titulo }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button class="btn btn-primary w-100 rounded-pill fw-bold py-2" onclick="processExport()">
+                        Exportar Datos al Token
+                    </button>
+                </div>
+
+                <div id="exportSuccess" style="display:none;" class="text-center py-4">
+                    <i class="bi bi-check-all text-success display-1 mb-3"></i>
+                    <h4 class="fw-bold">¡Datos Enviados!</h4>
+                    <button class="btn btn-outline-primary btn-sm mt-4 w-100" onclick="resetModal()">Volver a Importar otro</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function processExport() {
+        const id = document.getElementById('libroSelect').value;
+        const btn = document.querySelector('button[onclick="processExport()"]');
+        
+        // Efecto visual de carga
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Conectando...';
+
+        setTimeout(() => {
+            document.getElementById('setupExport').style.display = 'none';
+            document.getElementById('exportSuccess').style.display = 'block';
+            document.getElementById('resID').innerText = '#' + id;
+        }, 1200);
+    }
+
+    function resetModal() {
+        document.getElementById('setupExport').style.display = 'block';
+        document.getElementById('exportSuccess').style.display = 'none';
+        const btn = document.querySelector('button[onclick="processExport()"]');
+        btn.disabled = false;
+        btn.innerHTML = 'Exportar Datos al Token';
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,255 @@
+{% extends "index.html" %}
+
+{% block contenido %}
+
+<!-- Sección de bienvenida para visitantes -->
+{% if not user.is_authenticated %}
+<div class="col-12 mb-5">
+    <div class="card border-0 text-white overflow-hidden"
+        style="background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f953c6 100%); border-radius: 24px;">
+        <div class="card-body p-5 text-center">
+            <h1 class="display-4 fw-bold mb-3">
+                <i class="bi bi-stars me-3"></i>¡Bienvenido a BiblioTech!
+            </h1>
+            <p class="lead mb-4 opacity-90">
+                Tu biblioteca digital favorita. Explora miles de libros, solicita préstamos y mucho más.
+            </p>
+            <div class="d-flex justify-content-center gap-3 flex-wrap">
+                <a href="{% url 'registro' %}" class="btn btn-light btn-lg rounded-pill px-5 fw-bold">
+                    <i class="bi bi-rocket-takeoff me-2"></i>Crear Cuenta Gratis
+                </a>
+                <a href="{% url 'login' %}" class="btn btn-outline-light btn-lg rounded-pill px-5">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>Iniciar Sesión
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Estadísticas para visitantes -->
+<div class="col-12 mb-4">
+    <div class="row g-4 text-center">
+        <div class="col-md-4">
+            <div class="card border-0 py-4"
+                style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 20px;">
+                <div class="card-body text-white">
+                    <i class="bi bi-book display-4 mb-2"></i>
+                    <h2 class="fw-bold display-5">{{ total_libros|default:"0" }}</h2>
+                    <p class="mb-0 opacity-75">Libros Disponibles</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 py-4"
+                style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border-radius: 20px;">
+                <div class="card-body text-white">
+                    <i class="bi bi-people display-4 mb-2"></i>
+                    <h2 class="fw-bold display-5">{{ total_autores|default:"0" }}</h2>
+                    <p class="mb-0 opacity-75">Autores Registrados</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 py-4"
+                style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); border-radius: 20px;">
+                <div class="card-body text-white">
+                    <i class="bi bi-award display-4 mb-2"></i>
+                    <h2 class="fw-bold display-5">100%</h2>
+                    <p class="mb-0 opacity-75">Satisfacción</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Catálogo de Libros para visitantes -->
+<div class="col-12 mb-4">
+    <div class="card border-0 shadow" style="border-radius: 20px;">
+        <div class="card-header bg-transparent border-0 pt-4 px-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="fw-bold mb-0">
+                    <i class="bi bi-collection me-2 text-primary"></i>Explora Nuestro Catálogo
+                </h4>
+                <a href="{% url 'lista_libros' %}" class="btn btn-primary rounded-pill px-4">
+                    Ver Todos <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+        <div class="card-body p-4">
+            <div class="row g-4">
+                {% for libro in libros_destacados %}
+                <div class="col-md-4 col-lg-3">
+                    <div class="card h-100 border-0 shadow-sm" style="border-radius: 16px; overflow: hidden;">
+                        <div class="position-relative"
+                            style="height: 180px; background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);">
+                            {% if libro.imagen %}
+                            <img src="{{ libro.imagen.url }}" class="w-100 h-100" style="object-fit: cover;"
+                                alt="{{ libro.titulo }}">
+                            {% else %}
+                            <div class="d-flex align-items-center justify-content-center h-100">
+                                <i class="bi bi-book display-1 text-primary opacity-25"></i>
+                            </div>
+                            {% endif %}
+                            {% if libro.stock > 0 %}
+                            <span class="position-absolute top-0 end-0 m-2 badge bg-success">Disponible</span>
+                            {% else %}
+                            <span class="position-absolute top-0 end-0 m-2 badge bg-danger">Agotado</span>
+                            {% endif %}
+                        </div>
+                        <div class="card-body">
+                            <h6 class="fw-bold mb-1">{{ libro.titulo|truncatechars:25 }}</h6>
+                            <small class="text-muted">{{ libro.autor.nombre }} {{ libro.autor.apellido }}</small>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12 text-center py-4">
+                    <i class="bi bi-book display-1 text-muted mb-3"></i>
+                    <p class="text-muted">¡Próximamente más libros!</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Características -->
+<div class="col-12">
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card border-0 h-100 text-center p-4" style="background: #fef3c7; border-radius: 20px;">
+                <i class="bi bi-lightning-charge display-3 mb-3" style="color: #f59e0b;"></i>
+                <h5 class="fw-bold">Rápido y Fácil</h5>
+                <p class="text-muted small">Solicita préstamos en segundos desde cualquier lugar.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 h-100 text-center p-4" style="background: #dbeafe; border-radius: 20px;">
+                <i class="bi bi-shield-check display-3 mb-3" style="color: #3b82f6;"></i>
+                <h5 class="fw-bold">100% Seguro</h5>
+                <p class="text-muted small">Tus datos están protegidos con la mejor seguridad.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 h-100 text-center p-4" style="background: #dcfce7; border-radius: 20px;">
+                <i class="bi bi-gift display-3 mb-3" style="color: #22c55e;"></i>
+                <h5 class="fw-bold">Totalmente Gratis</h5>
+                <p class="text-muted small">Préstamos sin costo. Solo regístrate y disfruta.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Dashboard para usuarios autenticados -->
+{% if user.is_authenticated %}
+<!-- Card Libros - TODOS VEN -->
+<div class="col-md-6 col-lg-3">
+    <div class="card border-0 p-4 text-center"
+        style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); border-radius: 20px;">
+        <div class="icon-box bg-books mx-auto">
+            <i class="bi bi-journal-richtext"></i>
+        </div>
+        <h5 class="fw-bold">Libros</h5>
+        <p class="text-muted small">Gestión de inventario y catálogo.</p>
+        <h3 class="fw-bold mb-3 text-primary">{{ total_libros|default:"0" }}</h3>
+        <a href="{% url 'lista_libros' %}" class="btn btn-primary w-100 rounded-pill">Ver Catálogo</a>
+    </div>
+</div>
+
+<!-- Card Autores -->
+{% if puede_ver_autores %}
+<div class="col-md-6 col-lg-3">
+    <div class="card border-0 p-4 text-center"
+        style="background: linear-gradient(135deg, #cffafe 0%, #a5f3fc 100%); border-radius: 20px;">
+        <div class="icon-box bg-authors mx-auto">
+            <i class="bi bi-person-lines-fill"></i>
+        </div>
+        <h5 class="fw-bold">Autores</h5>
+        <p class="text-muted small">Registro de escritores y biografías.</p>
+        <h3 class="fw-bold mb-3 text-info">{{ total_autores|default:"0" }}</h3>
+        <a href="{% url 'lista_autores' %}" class="btn btn-info text-white w-100 rounded-pill">Ver Autores</a>
+    </div>
+</div>
+{% endif %}
+
+<!-- Card Stock -->
+{% if rol_usuario == 'bodeguero' or rol_usuario == 'admin' or rol_usuario == 'superusuario' %}
+<div class="col-md-6 col-lg-3">
+    <div class="card border-0 p-4 text-center"
+        style="background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); border-radius: 20px;">
+        <div class="icon-box mx-auto" style="background: #86efac; color: #16a34a;">
+            <i class="bi bi-box-seam"></i>
+        </div>
+        <h5 class="fw-bold">Stock</h5>
+        <p class="text-muted small">Control de inventario de libros.</p>
+        <h3 class="fw-bold mb-3 text-success">{{ total_stock|default:"0" }}</h3>
+        <a href="{% url 'gestionar_stock' %}" class="btn btn-success w-100 rounded-pill">
+            {% if rol_usuario == 'bodeguero' %}Editar Stock{% else %}Ver Stock{% endif %}
+        </a>
+    </div>
+</div>
+{% endif %}
+
+<!-- Card Préstamos -->
+{% if puede_ver_prestamos %}
+<div class="col-md-6 col-lg-3">
+    <div class="card border-0 p-4 text-center"
+        style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 20px;">
+        <div class="icon-box bg-loans mx-auto">
+            <i class="bi bi-calendar-check"></i>
+        </div>
+        <h5 class="fw-bold">Préstamos</h5>
+        <p class="text-muted small">Control de salidas y devoluciones.</p>
+        <h3 class="fw-bold mb-3" style="color: #d97706;">{{ total_prestamos|default:"0" }}</h3>
+        <a href="{% url 'lista_prestamos' %}" class="btn w-100 rounded-pill"
+            style="background: #f59e0b; color: white;">Gestionar</a>
+    </div>
+</div>
+{% endif %}
+
+<!-- Card Multas -->
+{% if puede_ver_multas %}
+<div class="col-md-6 col-lg-3">
+    <div class="card border-0 p-4 text-center"
+        style="background: linear-gradient(135deg, #fecaca 0%, #fca5a5 100%); border-radius: 20px;">
+        <div class="icon-box bg-fines mx-auto">
+            <i class="bi bi-exclamation-octagon"></i>
+        </div>
+        <h5 class="fw-bold">Multas</h5>
+        <p class="text-muted small">Sanciones y pagos pendientes.</p>
+        <h3 class="fw-bold mb-3 text-danger">${{ total_multas|default:"0" }}</h3>
+        <a href="{% url 'lista_multas' %}" class="btn btn-danger w-100 rounded-pill">Ver Reporte</a>
+    </div>
+</div>
+{% endif %}
+
+<!-- Card Solicitudes -->
+{% if puede_ver_solicitudes %}
+<div class="col-md-6 col-lg-3">
+    <div class="card border-0 p-4 text-center"
+        style="background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%); border-radius: 20px;">
+        <div class="icon-box mx-auto" style="background: #d8b4fe; color: #9333ea;">
+            <i class="bi bi-journal-bookmark"></i>
+        </div>
+
+        {% if puede_gestionar_solicitudes %}
+        <h5 class="fw-bold">Gestión Solicitudes</h5>
+        <p class="text-muted small">Administrar peticiones de préstamos.</p>
+        <!-- Aquí idealmente mostraríamos el total de pendientes, pero usaremos un icono o texto genérico si no tenemos la variable -->
+        <h3 class="fw-bold mb-3" style="color: #9333ea;"><i class="bi bi-inbox"></i></h3>
+        <a href="{% url 'lista_solicitudes' %}" class="btn w-100 rounded-pill"
+            style="background: #9333ea; color: white;">Gestionar</a>
+        {% else %}
+        <h5 class="fw-bold">Solicitudes</h5>
+        <p class="text-muted small">Solicitar préstamos de libros.</p>
+        <h3 class="fw-bold mb-3" style="color: #9333ea;">{{ mis_solicitudes|default:"0" }}</h3>
+        <a href="{% url 'mis_solicitudes' %}" class="btn w-100 rounded-pill"
+            style="background: #9333ea; color: white;">Mis Solicitudes</a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+{% endif %}
+
+{% endblock %}

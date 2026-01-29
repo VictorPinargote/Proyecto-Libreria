@@ -1,0 +1,156 @@
+{% extends "index.html" %}
+
+{% block contenido %}
+<div class="col-12">
+    <!-- Feedback Messages -->
+    {% if error %}
+    <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ error }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endif %}
+
+    <div class="card shadow-sm border-0 rounded-4">
+        <!-- Header -->
+        <div class="card-header text-white py-4 d-flex justify-content-between align-items-center"
+            style="background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%); border-radius: 16px 16px 0 0;">
+            <h4 class="mb-0 fw-bold">
+                <i class="bi bi-people-fill me-2"></i>Directorio de Autores
+            </h4>
+            <!-- Solo Bodegueros y Superusuarios pueden crear -->
+            {% if puede_gestionar_autores %}
+            <a href="{% url 'crear_autores' %}" class="btn btn-light rounded-pill px-4 fw-bold shadow-sm hover-scale">
+                <i class="bi bi-person-plus-fill me-2 text-info"></i>Nuevo Autor
+            </a>
+            {% endif %}
+        </div>
+
+        <!-- Body -->
+        <div class="card-body p-4">
+            {% if autores %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light text-secondary">
+                        <tr>
+                            <th class="border-0 rounded-start ps-4">Autor</th>
+                            <th class="border-0">Biografía</th>
+                            {% if puede_gestionar_autores %}
+                            <th class="border-0 rounded-end text-center">Acciones</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for autor in autores %}
+                        <tr>
+                            <td class="ps-4">
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-circle bg-info bg-opacity-10 text-info fw-bold me-3 d-flex align-items-center justify-content-center rounded-circle"
+                                        style="width: 45px; height: 45px;">
+                                        {{ autor.nombre.0 }}{{ autor.apellido.0 }}
+                                    </div>
+                                    <div>
+                                        <a href="{% url 'detalle_autor' autor.id %}"
+                                            class="text-decoration-none hover-underline">
+                                            <h6 class="mb-0 fw-bold text-dark">{{ autor.nombre }} {{ autor.apellido }}
+                                            </h6>
+                                        </a>
+                                        <small class="text-muted">ID: #{{ autor.id }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                {% if autor.bibliografia %}
+                                <p class="text-muted mb-0 small text-truncate" style="max-width: 300px;">
+                                    {{ autor.bibliografia }}
+                                </p>
+                                {% else %}
+                                <span class="badge bg-light text-secondary border fw-normal">Sin biografía</span>
+                                {% endif %}
+                            </td>
+
+                            <!-- Acciones solo para quien puede gestionar -->
+                            {% if puede_gestionar_autores %}
+                            <td class="text-center">
+                                <div class="btn-group shadow-sm rounded-pill" role="group">
+                                    <a href="{% url 'editar_autor' autor.id %}"
+                                        class="btn btn-sm btn-outline-primary px-3 border-0">
+                                        <i class="bi bi-pencil-fill"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-outline-danger px-3 border-0"
+                                        data-bs-toggle="modal" data-bs-target="#deleteModal{{ autor.id }}">
+                                        <i class="bi bi-trash-fill"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Modal de Eliminación -->
+                                <div class="modal fade" id="deleteModal{{ autor.id }}" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content border-0 shadow-lg rounded-4">
+                                            <div class="modal-header border-0 bg-danger text-white rounded-top-4">
+                                                <h5 class="modal-title fw-bold">
+                                                    <i class="bi bi-exclamation-triangle-fill me-2"></i>Confirmar
+                                                    Eliminación
+                                                </h5>
+                                                <button type="button" class="btn-close btn-close-white"
+                                                    data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body p-4 text-center">
+                                                <div class="mb-3">
+                                                    <i class="bi bi-person-x display-1 text-danger opacity-25"></i>
+                                                </div>
+                                                <h5 class="fw-bold text-dark mb-2">¿Eliminar a {{ autor.nombre }} {{
+                                                    autor.apellido }}?</h5>
+                                                <p class="text-muted mb-0">Esta acción no se puede deshacer. Si el autor
+                                                    tiene libros, no podrá ser eliminado.</p>
+                                            </div>
+                                            <div class="modal-footer border-0 justify-content-center pb-4">
+                                                <button type="button" class="btn btn-light rounded-pill px-4 fw-bold"
+                                                    data-bs-dismiss="modal">Cancelar</button>
+                                                <form action="{% url 'eliminar_autor' autor.id %}" method="POST"
+                                                    class="d-inline">
+                                                    {% csrf_token %}
+                                                    <button type="submit"
+                                                        class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm">
+                                                        <i class="bi bi-trash-fill me-2"></i>Si, Eliminar
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-people display-1 text-muted opacity-25"></i>
+                <p class="text-muted mt-3 mb-4 fw-medium">No hay autores registrados</p>
+                {% if puede_gestionar_autores %}
+                <a href="{% url 'crear_autores' %}" class="btn btn-info rounded-pill px-4 text-white hover-scale">
+                    <i class="bi bi-person-plus-fill me-2"></i>Crear Primer Autor
+                </a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .hover-scale {
+        transition: transform 0.2s;
+    }
+
+    .hover-scale:hover {
+        transform: scale(1.05);
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: rgba(8, 145, 178, 0.03);
+    }
+</style>
+{% endblock %}

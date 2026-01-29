@@ -1,0 +1,118 @@
+{% extends "index.html" %}
+
+{% block contenido %}
+<div class="col-12">
+    <div class="card shadow border-0 rounded-4">
+        <div class="card-header text-white py-4" style="background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h3 class="mb-0 fw-bold">
+                        <i class="bi bi-activity me-2"></i>Registro de Actividad
+                    </h3>
+                    <p class="mb-0 mt-1 opacity-75">Historial de acciones en el sistema</p>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-4">
+            <!-- Filtros -->
+            <form method="GET" class="row g-3 mb-4">
+                <div class="col-md-3">
+                    <label class="form-label">Tipo de Acción</label>
+                    <select name="tipo" id="filtro-tipo-select" class="form-select">
+                        <option value="">Todos</option>
+                        {% for valor, nombre in tipos_accion %}
+                        <option value="{{ valor }}">{{ nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Usuario</label>
+                    <input type="text" name="usuario" class="form-control" value="{{ filtro_usuario }}"
+                        placeholder="Buscar usuario...">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Fecha</label>
+                    <input type="date" name="fecha" class="form-control" value="{{ filtro_fecha }}">
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="bi bi-search me-1"></i>Filtrar
+                    </button>
+                    <a href="{% url 'lista_logs' %}" class="btn btn-outline-secondary">Limpiar</a>
+                </div>
+            </form>
+
+            <!-- Tabla de logs -->
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Fecha/Hora</th>
+                            <th>Usuario</th>
+                            <th>Acción</th>
+                            <th>Descripción</th>
+                            <th>IP</th>
+                            <th>URL</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in logs %}
+                        <tr>
+                            <td>
+                                <small>{{ log.fecha_hora|date:"d/m/Y H:i" }}</small>
+                            </td>
+                            <td>
+                                {% if log.usuario %}
+                                <strong>@{{ log.usuario.username }}</strong>
+                                {% else %}
+                                <span class="text-muted">Anónimo</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if log.tipo_accion == 'login' %}
+                                <span class="badge bg-success">{{ log.get_tipo_accion_display }}</span>
+                                {% elif log.tipo_accion == 'logout' %}
+                                <span class="badge bg-secondary">{{ log.get_tipo_accion_display }}</span>
+                                {% elif log.tipo_accion == 'crear' %}
+                                <span class="badge bg-primary">{{ log.get_tipo_accion_display }}</span>
+                                {% elif log.tipo_accion == 'eliminar' %}
+                                <span class="badge bg-danger">{{ log.get_tipo_accion_display }}</span>
+                                {% elif log.tipo_accion == 'editar' %}
+                                <span class="badge bg-warning text-dark">{{ log.get_tipo_accion_display }}</span>
+                                {% elif log.tipo_accion == 'aprobar' %}
+                                <span class="badge bg-success">{{ log.get_tipo_accion_display }}</span>
+                                {% elif log.tipo_accion == 'rechazar' %}
+                                <span class="badge bg-danger">{{ log.get_tipo_accion_display }}</span>
+                                {% else %}
+                                <span class="badge bg-info">{{ log.get_tipo_accion_display }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ log.descripcion|truncatechars:60 }}</td>
+                            <td><small class="text-muted">{{ log.direccion_ip|default:"-" }}</small></td>
+                            <td><small class="text-muted">{{ log.url|default:"-"|truncatechars:30 }}</small></td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">No hay registros de actividad</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="text-muted mt-3">
+                <small>Mostrando los últimos 500 registros</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var filtroTipo = "{{ filtro_tipo }}";
+        var select = document.getElementById('filtro-tipo-select');
+        if (select && filtroTipo) {
+            select.value = filtroTipo;
+        }
+    });
+</script>
+{% endblock %}
