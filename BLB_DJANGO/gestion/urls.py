@@ -61,9 +61,7 @@ urlpatterns = [
     # Gestión de Stock (Bodeguero)
     path('stock/', gestionar_stock, name='gestionar_stock'),
     
-    # API OpenLibrary
-    path('api/libros/', api_buscar_libros, name='api_buscar_libros'),
-    path('api/autores/', api_buscar_autores, name='api_buscar_autores'),
+    # API OpenLibrary (Rutas obsoletas eliminadas para dar paso a la nueva API)
     
     # --- MODULO API (Refactorizado) ---
     path('api/', include('gestion.api_custom.urls')),

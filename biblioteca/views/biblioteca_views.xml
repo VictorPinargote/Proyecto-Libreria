@@ -4,18 +4,57 @@
             <field name="name">biblioteca.libro.list</field>
             <field name="model">biblioteca.libro</field>
             <field name="arch" type="xml">
-                <list>
+                <list string="Libros">
                     <field name="isbn"/>
                     <field name="titulo"/>
                     <field name="autor_id"/>
                     <field name="editorial"/>
                     <field name="paginas"/>
+                    <field name="estado" widget="badge" decoration-success="estado == 'disponible'"/>
                 </list>
             </field>
         </record>
 
+        <record id="view_libro_form" model="ir.ui.view">
+            <field name="name">biblioteca.libro.form</field>
+            <field name="model">biblioteca.libro</field>
+            <field name="arch" type="xml">
+                <form string="Libro">
+                    <header>
+                        <button name="action_sincronizar_api" 
+                                string="🔄 Sincronizar API" 
+                                type="object" 
+                                class="btn-primary"/>
+                        <field name="estado" widget="statusbar"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1><field name="titulo" placeholder="Título..."/></h1>
+                        </div>
+                        <group>
+                            <field name="isbn"/>
+                            <field name="autor_id"/>
+                            <field name="editorial"/>
+                            <field name="paginas"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_sync_django_server" model="ir.actions.server">
+            <field name="name">📥 Importar de Django</field>
+            <field name="model_id" ref="model_biblioteca_libro"/>
+            <field name="binding_model_id" ref="model_biblioteca_libro"/>
+            <field name="binding_view_types">list</field>
+            <field name="state">code</field>
+            <field name="code">
+                action = model.action_sincronizar_api()
+            </field>
+        </record>
+
         <record id="action_libros" model="ir.actions.act_window">
-            <field name="name">Libros Importados</field>
+            <field name="name">Libros</field>
             <field name="res_model">biblioteca.libro</field>
             <field name="view_mode">list,form</field>
         </record>

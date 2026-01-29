@@ -30,6 +30,7 @@ class Libro(models.Model):
     stock = models.IntegerField(default=1)
     anio_publicacion = models.IntegerField(blank=True, null=True)
     es_de_openlibrary = models.BooleanField(default=False)
+    en_odoo = models.BooleanField(default=False)
     
     def __str__(self):
         return f"{self.titulo} - {self.autor.nombre} {self.autor.apellido}"

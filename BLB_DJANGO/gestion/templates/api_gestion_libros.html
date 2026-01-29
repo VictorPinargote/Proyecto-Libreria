@@ -59,7 +59,11 @@
                             </td>
                             <td class="font-monospace text-secondary small">{{ libro.descripcion|slice:"6:19" }}</td>
                             <td>
-                                <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Disponible</span>
+                                {% if libro.en_odoo %}
+                                    <span class="badge bg-success shadow-sm"><i class="bi bi-check-circle-fill me-1"></i>En Odoo</span>
+                                {% else %}
+                                    <span class="badge bg-secondary bg-opacity-25 text-secondary"><i class="bi bi-circle me-1"></i>Pendiente</span>
+                                {% endif %}
                             </td>
                             <td class="text-end pe-4">
                                 <a href="/api/libros/{{ libro.id }}/" target="_blank" class="btn btn-sm btn-outline-dark" title="Ver JSON">
@@ -117,7 +121,7 @@
 </div>
 
 <script>
-    function processExport() {
+    async function processExport() {
         const id = document.getElementById('libroSelect').value;
         const btn = document.querySelector('button[onclick="processExport()"]');
         
@@ -125,19 +129,37 @@
         btn.disabled = true;
         btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Conectando...';
 
-        setTimeout(() => {
-            document.getElementById('setupExport').style.display = 'none';
-            document.getElementById('exportSuccess').style.display = 'block';
-            document.getElementById('resID').innerText = '#' + id;
-        }, 1200);
+        try {
+            const response = await fetch(`/api/gestion/exportar/${id}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                // Éxito real
+                const data = await response.json();
+                document.getElementById('setupExport').style.display = 'none';
+                document.getElementById('exportSuccess').style.display = 'block';
+                // Recargar página al cerrar para actualizar estados
+                window.onModalClose = () => location.reload();
+            } else {
+                alert('Error al conectar con la API.');
+                btn.disabled = false;
+                btn.innerText = 'Reintentar Exportación';
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Error de red.');
+            btn.disabled = false;
+            btn.innerText = 'Reintentar Exportación';
+        }
     }
 
     function resetModal() {
-        document.getElementById('setupExport').style.display = 'block';
-        document.getElementById('exportSuccess').style.display = 'none';
-        const btn = document.querySelector('button[onclick="processExport()"]');
-        btn.disabled = false;
-        btn.innerHTML = 'Exportar Datos al Token';
+        location.reload(); // Recargar para ver el cambio de estado en la tabla
     }
 </script>
 {% endblock %}

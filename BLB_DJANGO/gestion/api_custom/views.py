@@ -167,3 +167,16 @@ def api_proxy_openlibrary(request):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def api_exportar_libro(request, libro_id):
+    """Marca un libro como disponible para Odoo (en_odoo=True)"""
+    try:
+        libro = get_object_or_404(Libro, pk=libro_id)
+        libro.en_odoo = True
+        libro.save()
+        return JsonResponse({'status': 'ok', 'message': f'Libro {libro.id} exportado correctamente.'})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
