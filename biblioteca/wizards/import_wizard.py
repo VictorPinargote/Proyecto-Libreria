@@ -10,6 +10,8 @@ class LibroImportWizard(models.TransientModel):
     _description = 'Importar Libro desde API'
 
     query = fields.Char('Buscar (ISBN o Título)', required=True)
+    api_token = fields.Char('Token API', required=True, default='4af65a4e59810b00c011b906de3ee7703d28f432')
+    api_url = fields.Char('URL API', required=True, default='http://127.0.0.1:8000/api/proxy/openlibrary/')
     
     # Campos de previsualización
     preview_isbn = fields.Char('ISBN', readonly=True)
@@ -27,9 +29,9 @@ class LibroImportWizard(models.TransientModel):
         if not self.query:
              raise exceptions.UserError("Por favor escribe un ISBN o Título.")
 
-        url = 'http://127.0.0.1:8000/api/libros/buscar/'
+        headers = {'Authorization': f'Token {self.api_token}'}
         try:
-            res = requests.get(url, params={'q': self.query}, timeout=10)
+            res = requests.get(self.api_url, params={'q': self.query}, headers=headers, timeout=10)
             
             if res.status_code == 200:
                 data_list = res.json()
@@ -43,8 +45,8 @@ class LibroImportWizard(models.TransientModel):
                 self.write({
                     'preview_isbn': data.get('isbn'),
                     'preview_titulo': data.get('titulo'),
-                    'preview_autor': data.get('autor_nombre'),
-                    'preview_cover_url': data.get('imagen_url'),
+                    'preview_autor': data.get('autor'),
+                    'preview_cover_url': data.get('cover'),
                     'preview_editorial': data.get('editorial'),
                     'preview_descripcion': data.get('descripcion'),
                     'preview_paginas': data.get('paginas'),

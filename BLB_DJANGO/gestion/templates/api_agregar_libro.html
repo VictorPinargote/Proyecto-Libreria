@@ -98,22 +98,28 @@
         feedback.innerText = '';
 
         try {
-            const response = await fetch(`/api/proxy/openlibrary/?q=${encodeURIComponent(query)}`);
+            const response = await fetch(`/api/proxy/openlibrary-external/?q=${encodeURIComponent(query)}`);
             const data = await response.json();
 
             if (response.ok) {
+                // ADAPTACIÓN: La API ahora devuelve una lista [obj]
+                let libro = data;
+                if (Array.isArray(data)) {
+                    libro = data[0];
+                }
+
                 // Llenar campos
-                document.getElementById('titulo').value = data.titulo || '';
-                document.getElementById('isbn').value = data.isbn || '';
-                document.getElementById('autor').value = data.autor || '';
-                document.getElementById('editorial').value = data.editorial || '';
-                document.getElementById('paginas').value = data.paginas || '';
-                document.getElementById('anio_publicacion').value = data.anio || '';
-                document.getElementById('cover_url').value = data.cover || '';
+                document.getElementById('titulo').value = libro.titulo || '';
+                document.getElementById('isbn').value = libro.isbn || '';
+                document.getElementById('autor').value = libro.autor || '';
+                document.getElementById('editorial').value = libro.editorial || '';
+                document.getElementById('paginas').value = libro.paginas || '';
+                document.getElementById('anio_publicacion').value = libro.anio || '';
+                document.getElementById('cover_url').value = libro.cover || '';
 
                 // Mostrar portada
-                if (data.cover) {
-                    document.getElementById('previewCover').src = data.cover;
+                if (libro.cover) {
+                    document.getElementById('previewCover').src = libro.cover;
                     document.getElementById('previewCoverContainer').style.display = 'block';
                 }
 

@@ -7,4 +7,10 @@ class LibroSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Libro
-        fields = '__all__'
+        # Excluimos 'id' e 'imagen' (física) y campos inexistentes para evitar 500 error.
+        fields = [
+            'titulo', 'autor_nombre', 'autor', 
+            'descripcion', 'anio_publicacion',
+            'stock', 'disponible', 'es_de_openlibrary', 
+            'en_odoo', 'imagen_url'
+        ]

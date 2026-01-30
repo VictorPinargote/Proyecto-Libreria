@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 import requests
+import re #se usa para?
 from rest_framework import viewsets
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -9,6 +10,9 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from gestion.models import Libro, Autor
 from .serializers import LibroSerializer
+import json
+import os
+from django.conf import settings
 
 # =====================================================
 # 1. VIEWSETS (Endpoints de Datos para Odoo)
@@ -83,36 +87,76 @@ def api_agregar_libro(request):
             disponible=True,
             descripcion=f"ISBN: {isbn} | Editorial: {editorial} | Páginas: {paginas}",
             anio_publicacion=anio_int,
-            es_de_openlibrary=True 
+            es_de_openlibrary=True,
+            imagen_url=cover_url # Guardamos la URL directa (User Request: Solo URL, no archivo físico)
         )
         
         return redirect('api_gestion_libros')
 
     return render(request, 'gestion/templates/api_agregar_libro.html')
 
-@login_required
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def api_proxy_openlibrary(request):
-    """Proxy para buscar en OpenLibrary desde el frontend (evita CORS y lógica en JS puro)"""
+    """
+    Endpoint EXCLUSIVO de Datos Locales (JSON).
+    Ya no consulta OpenLibrary. Solo devuelve lo que está en libros_local.json.
+    """
+    q = request.GET.get('q', '').strip()
+    if not q: return JsonResponse({'error': 'Vacío'}, status=400)
+    
+    # Ruta al JSON generado por sync_service.py
+    json_path = os.path.join(settings.BASE_DIR, 'gestion', 'api_custom', 'libros_local.json')
+    
+    libro_encontrado_list = []
+    
+    if os.path.exists(json_path):
+        try:
+            with open(json_path, 'r', encoding='utf-8') as f:
+                libros_json = json.load(f)
+                
+            # Buscar en memoria (Case insensitive)
+            q_lower = q.lower()
+            for l in libros_json:
+                # Buscar por título o ISBN
+                if q_lower in l.get('titulo', '').lower() or q_lower in l.get('isbn', '').lower():
+                    # Asegurar que la URL de la portada sea absoluta
+                    if l.get('cover') and not l['cover'].startswith('http'):
+                        l['cover'] = request.build_absolute_uri(l['cover'])
+                    libro_encontrado_list.append(l)
+                    # Si solo queremos el primero, hacemos: break
+                    break
+        except Exception as e:
+            print(f"Error leyendo JSON: {e}")
+
+    if libro_encontrado_list:
+        return JsonResponse(libro_encontrado_list, safe=False)
+    
+    # Si no está en el JSON, devolvemos lista vacía (Odoo entenderá "No encontrado")
+    return JsonResponse([], safe=False)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_openlibrary_proxy_external(request):
+    """
+    Endpoint EXCLUSIVO para el Frontend de Django.
+    Este SÍ tiene permiso de consultar OpenLibrary para ayudar a crear nuevos libros.
+    """
     q = request.GET.get('q', '').strip()
     if not q: return JsonResponse({'error': 'Vacío'}, status=400)
     
     try:
-        # 1. Intentar buscar como ISBN directo
-        # Los ISBN suelen ser numéricos de 10 o 13 dígitos
+        # Lógica original de OpenLibrary que se eliminó, restaurada solo para este endpoint
         es_isbn = q.replace("-", "").isdigit() and len(q.replace("-", "")) in [10, 13]
-        
         docs = []
-        
+
         if es_isbn:
-            # Búsqueda específica por ISBN (suele dar mejor dato)
             url_isbn = f"https://openlibrary.org/isbn/{q.replace('-', '')}.json"
             resp_isbn = requests.get(url_isbn, timeout=5)
             if resp_isbn.status_code == 200:
                 book_data = resp_isbn.json()
-                # Adaptamos al formato de search.json para simplificar
-                # Necesitamos transformar los datos crudos del ISBN endpoint
                 
-                # Resolviendo autor (viene como key /authors/Ol123...)
                 autor_nombre = "Desconocido"
                 if 'authors' in book_data:
                     key_autor = book_data['authors'][0]['key']
@@ -123,7 +167,6 @@ def api_proxy_openlibrary(request):
                     except: pass
                 
                 publish_date = book_data.get('publish_date', '')
-                # Intentar extraer solo el año de strings como "May 2005" o "2005"
                 anio = ''.join(filter(str.isdigit, str(publish_date)))[:4]
                 
                 docs = [{
@@ -136,7 +179,6 @@ def api_proxy_openlibrary(request):
                     'cover_i': book_data.get('covers', [None])[0]
                 }]
 
-        # 2. Si no es ISBN o falló, usar search general
         if not docs:
             url = "https://openlibrary.org/search.json"
             params = {'q': q, 'limit': 1}
@@ -145,27 +187,58 @@ def api_proxy_openlibrary(request):
                 docs = resp.json().get('docs', [])
 
         if docs:
-            book = docs[0]
+            book = None
+            for doc in docs[:5]:
+                if doc.get('isbn') and len(doc.get('isbn')) > 0:
+                    book = doc
+                    break
+            if not book: book = docs[0]
+
             cover_url = ''
             if book.get('cover_i'):
                 cover_url = f"https://covers.openlibrary.org/b/id/{book.get('cover_i')}-L.jpg"
-            elif es_isbn and book.get('covers'): # Soporte para el formato directo de ISBN que guarda lista de IDs
-                 cover_url = f"https://covers.openlibrary.org/b/id/{book.get('covers')[0]}-L.jpg"
+            elif es_isbn and book.get('covers'): 
+                  cover_url = f"https://covers.openlibrary.org/b/id/{book.get('covers')[0]}-L.jpg"
+
+            isbn_list = book.get('isbn', [])
+            isbn_final = "S/N"
+            if isinstance(isbn_list, list):
+                for code in isbn_list:
+                     if len(code) == 13 and code.startswith('978'):
+                         isbn_final = code
+                         break
+                if isbn_final == "S/N" and len(isbn_list) > 0:
+                     isbn_final = isbn_list[0]
+            else:
+                 isbn_final = isbn_list or "S/N"
+                 
+            publish_date = book.get('publish_date', '')
+            if isinstance(publish_date, list): publish_date = publish_date[0]
+            anio_str = ''.join(filter(str.isdigit, str(publish_date)))[:4]
+            
+            editorial_val = "Desconocido"
+            pubs = book.get('publisher', [])
+            if isinstance(pubs, list) and len(pubs) > 0:
+                editorial_val = pubs[0]
+            elif isinstance(pubs, str):
+                editorial_val = pubs
 
             data = {
                 'titulo': book.get('title'),
-                'isbn': book.get('isbn', [''])[0] if isinstance(book.get('isbn'), list) else book.get('isbn'),
+                'isbn': isbn_final,
                 'autor': book.get('author_name', ['Desconocido'])[0] if isinstance(book.get('author_name'), list) else book.get('author_name'),
-                'editorial': book.get('publisher', [''])[0] if isinstance(book.get('publisher'), list) else book.get('publisher'),
+                'editorial': editorial_val,
                 'paginas': book.get('number_of_pages_median', 0) or book.get('number_of_pages', 0),
-                'anio': book.get('first_publish_year') or book.get('publish_year', [0])[0] if isinstance(book.get('publish_year'), list) else book.get('publish_year'),
-                'cover': cover_url
+                'anio': anio_str or 0,
+                'cover': cover_url,
+                'origen': 'OpenLibrary API (Internet)'
             }
-            return JsonResponse(data)
-            
-        return JsonResponse({'error': 'No encontrado'}, status=404)
+            return JsonResponse([data], safe=False) # Frontend espera lista
+
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+    
+    return JsonResponse([], safe=False)
 
 
 @api_view(['POST'])

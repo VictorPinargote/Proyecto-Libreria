@@ -28,6 +28,7 @@
                         <field name="estado" widget="statusbar"/>
                     </header>
                     <sheet>
+                        <field name="portada" widget="image" class="oe_avatar" options='{"preview_image": "portada"}'/>
                         <div class="oe_title">
                             <h1><field name="titulo" placeholder="Título..."/></h1>
                         </div>

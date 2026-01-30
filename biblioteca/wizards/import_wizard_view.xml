@@ -6,6 +6,8 @@
             <form string="Importar Libro">
                 <group>
                     <field name="query" placeholder="Ej: Harry Potter"/>
+                    <field name="api_token" password="True"/>
+                    <field name="api_url"/>
                     <field name="state" invisible="1"/>
                 </group>
                 <group invisible="state != 'found'">

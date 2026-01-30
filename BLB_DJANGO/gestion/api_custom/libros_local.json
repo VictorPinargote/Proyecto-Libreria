@@ -1,0 +1,74 @@
+[
+  {
+    "titulo": "cien años de soledad",
+    "isbn": "S/N",
+    "autor": "Gabriel García Márquez",
+    "editorial": "Desconocido",
+    "paginas": 0,
+    "descripcion": "",
+    "anio": 0,
+    "stock": 5,
+    "cover": "",
+    "origen": "Django JSON Cache"
+  },
+  {
+    "titulo": "Harry Potter and the Order of the Phoenix",
+    "isbn": "S/N",
+    "autor": "Joris-Karl Huysmans",
+    "editorial": "Desconocido",
+    "paginas": 0,
+    "descripcion": "After the Dementors’ attack on his cousin Dudley, Harry knows he is about to become Voldemort’s next target.\r\n \r\n Although many are denying the Dark Lord’s return, Harry is not alone, and a secret order is gathering at Grimmauld Place to fight against the Dark forces.\r\n \r\n Meanwhile, Voldemort’s savage assaults on Harry’s mind are growing stronger every day.\r\n \r\n He must allow Professor Snape to teach him to protect himself before he runs out of time.\r\n ([source][1])\r\n \r\n \r\n ----------\r\n This work has also",
+    "anio": 2003,
+    "stock": 6,
+    "cover": "",
+    "origen": "Django JSON Cache"
+  },
+  {
+    "titulo": "The Chalk Man",
+    "isbn": "S/N",
+    "autor": "C. J. Tudor",
+    "editorial": "Desconocido",
+    "paginas": 0,
+    "descripcion": "\"Narrated by 'Eddie' who receives a chalk drawing of a stick figure that hurtles him back to an innocent childhood game 30 years before which went terribly, terribly wrong. As history begins to repeat itself, it seems the game was never really over\" --",
+    "anio": 2017,
+    "stock": 20,
+    "cover": "",
+    "origen": "Django JSON Cache"
+  },
+  {
+    "titulo": "The Complete Illustrated Kama Sutra",
+    "isbn": "S/N",
+    "autor": "Lance Dane",
+    "editorial": "Desconocido",
+    "paginas": 0,
+    "descripcion": "",
+    "anio": 2003,
+    "stock": 3,
+    "cover": "",
+    "origen": "Django JSON Cache"
+  },
+  {
+    "titulo": "No Abras Este Libro/don't Open This Book",
+    "isbn": "9788496517158",
+    "autor": "Michaela Muntean",
+    "editorial": "Lectorum Publications",
+    "paginas": 40,
+    "descripcion": "ISBN: 9788496517158 | Editorial: Lectorum Publications | Páginas: 40",
+    "anio": 0,
+    "stock": 1,
+    "cover": "https://covers.openlibrary.org/b/isbn/9788496517158-L.jpg",
+    "origen": "Django JSON Cache"
+  },
+  {
+    "titulo": "Habitación",
+    "isbn": "9788420406619",
+    "autor": "Emma Donoghue",
+    "editorial": "Alfaguara",
+    "paginas": 379,
+    "descripcion": "ISBN: 9788420406619 | Editorial: Alfaguara | Páginas: 379",
+    "anio": 0,
+    "stock": 1,
+    "cover": "https://covers.openlibrary.org/b/isbn/9788420406619-L.jpg",
+    "origen": "Django JSON Cache"
+  }
+]

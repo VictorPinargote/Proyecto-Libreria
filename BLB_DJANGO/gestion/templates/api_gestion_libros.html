@@ -26,8 +26,7 @@
                 <table class="table table-hover align-middle mb-0">
                     <thead class="bg-light">
                         <tr>
-                            <th class="ps-4">ID</th>
-                            <th>Portada</th>
+                            <th class="ps-4">Portada</th>
                             <th>Título</th>
                             <th>Autor</th>
                             <th>ISBN</th>
@@ -38,9 +37,10 @@
                     <tbody>
                         {% for libro in libros %}
                         <tr>
-                            <td class="ps-4 fw-bold">#{{ libro.id }}</td>
-                            <td>
-                                {% if libro.imagen %}
+                            <td class="ps-4">
+                                {% if libro.imagen_url %}
+                                    <img src="{{ libro.imagen_url }}" class="rounded shadow-sm" style="width: 40px; height: 60px; object-fit: cover;">
+                                {% elif libro.imagen %}
                                     <img src="{{ libro.imagen.url }}" class="rounded shadow-sm" style="width: 40px; height: 60px; object-fit: cover;">
                                 {% else %}
                                     <div class="bg-secondary bg-opacity-10 rounded d-flex align-items-center justify-content-center text-muted" style="width: 40px; height: 60px;">
@@ -60,7 +60,7 @@
                             <td class="font-monospace text-secondary small">{{ libro.descripcion|slice:"6:19" }}</td>
                             <td>
                                 {% if libro.en_odoo %}
-                                    <span class="badge bg-success shadow-sm"><i class="bi bi-check-circle-fill me-1"></i>En Odoo</span>
+                                    <span class="badge bg-success shadow-sm"><i class="bi bi-check-circle-fill me-1"></i>Importado</span>
                                 {% else %}
                                     <span class="badge bg-secondary bg-opacity-25 text-secondary"><i class="bi bi-circle me-1"></i>Pendiente</span>
                                 {% endif %}
