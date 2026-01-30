@@ -26,7 +26,6 @@ class Libro(models.Model):
     autor = models.ForeignKey(Autor, related_name="libros", on_delete=models.PROTECT)
     descripcion = models.TextField(blank=True, null=True)
     disponible = models.BooleanField(default=True)
-    imagen = models.ImageField(upload_to='libros/', blank=True, null=True) # Deprecated
     imagen_url = models.CharField(max_length=500, blank=True, null=True) # New: Store online URL directly
     stock = models.IntegerField(default=1)
     anio_publicacion = models.IntegerField(blank=True, null=True)

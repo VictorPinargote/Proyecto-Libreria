@@ -55,8 +55,8 @@
                             <!-- Image Container -->
                             <div class="card-img-top position-relative overflow-hidden bg-light d-flex align-items-center justify-content-center"
                                 style="height: 260px; border-radius: 20px 20px 0 0;">
-                                {% if libro.imagen %}
-                                <img src="{{ libro.imagen.url }}" alt="{{ libro.titulo }}"
+                                {% if libro.imagen_url %}
+                                <img src="{{ libro.imagen_url }}" alt="{{ libro.titulo }}"
                                     class="w-100 h-100 object-fit-cover transition-transform">
                                 {% else %}
                                 <div class="text-center p-4 opacity-50">

@@ -40,8 +40,6 @@
                             <td class="ps-4">
                                 {% if libro.imagen_url %}
                                     <img src="{{ libro.imagen_url }}" class="rounded shadow-sm" style="width: 40px; height: 60px; object-fit: cover;">
-                                {% elif libro.imagen %}
-                                    <img src="{{ libro.imagen.url }}" class="rounded shadow-sm" style="width: 40px; height: 60px; object-fit: cover;">
                                 {% else %}
                                     <div class="bg-secondary bg-opacity-10 rounded d-flex align-items-center justify-content-center text-muted" style="width: 40px; height: 60px;">
                                         <i class="bi bi-book"></i>
@@ -66,9 +64,15 @@
                                 {% endif %}
                             </td>
                             <td class="text-end pe-4">
-                                <a href="/api/libros/{{ libro.id }}/" target="_blank" class="btn btn-sm btn-outline-dark" title="Ver JSON">
-                                    <i class="bi bi-code-slash"></i> JSON
-                                </a>
+                                <div class="btn-group">
+                                    <a href="{% url 'api_editar_libro' libro.id %}" class="btn btn-sm btn-outline-warning" title="Editar">
+                                        <i class="bi bi-pencil"></i> Editar
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" title="Eliminar"
+                                            onclick="confirmDelete('{{ libro.id }}', '{{ libro.titulo|escapejs }}')">
+                                        <i class="bi bi-trash"></i> Eliminar
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                         {% empty %}
@@ -160,6 +164,21 @@
 
     function resetModal() {
         location.reload(); // Recargar para ver el cambio de estado en la tabla
+    }
+
+    function confirmDelete(id, titulo) {
+        if (confirm(`¿Estás seguro de que deseas eliminar el libro "${titulo}"?\nEsta acción lo borrará de la base de datos y del JSON.`)) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/api/gestion/eliminar/${id}/`;
+            const csrf = document.createElement('input');
+            csrf.type = 'hidden';
+            csrf.name = 'csrfmiddlewaretoken';
+            csrf.value = '{{ csrf_token }}';
+            form.appendChild(csrf);
+            document.body.appendChild(form);
+            form.submit();
+        }
     }
 </script>
 {% endblock %}

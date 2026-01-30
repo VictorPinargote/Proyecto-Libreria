@@ -11,9 +11,9 @@
             <form method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
 
-                {% if libro.imagen %}
+                {% if libro.imagen_url %}
                 <div class="text-center mb-4">
-                    <img src="{{ libro.imagen.url }}" class="rounded shadow" style="max-height: 150px;">
+                    <img src="{{ libro.imagen_url }}" class="rounded shadow" style="max-height: 150px;">
                 </div>
                 {% endif %}
 
@@ -60,8 +60,11 @@
                 </div>
 
                 <div class="mb-4">
-                    <label class="form-label fw-semibold">Cambiar Imagen</label>
-                    <input type="file" name="imagen" class="form-control" accept="image/*">
+                    <label class="form-label fw-semibold">URL de Imagen (Portada)</label>
+                    <input type="url" name="imagen_url" class="form-control" value="{{ libro.imagen_url|default:'' }}" placeholder="https://ejemplo.com/imagen.jpg">
+                    {% if libro.imagen_url %}
+                    <small class="text-muted">URL actual: {{ libro.imagen_url|truncatechars:50 }}</small>
+                    {% endif %}
                 </div>
 
                 <div class="d-grid gap-2">

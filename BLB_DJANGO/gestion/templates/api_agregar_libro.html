@@ -1,82 +1,77 @@
 {% extends 'gestion/templates/index.html' %} 
 
 {% block contenido %}
-<div class="col-lg-8 mx-auto">
-    <div class="d-flex align-items-center mb-4">
-        <a href="{% url 'api_gestion_libros' %}" class="btn btn-outline-light text-dark me-3 rounded-circle" style="width:40px;height:40px;display:grid;place-items:center;">
-            <i class="bi bi-arrow-left"></i>
-        </a>
-        <h2 class="fw-bold text-primary mb-0">Agregar Nuevo Libro</h2>
-    </div>
-
-    <div class="card border-0 shadow-lg overflow-hidden">
-        <div class="card-header bg-primary text-white p-4">
-            <h5 class="mb-0"><i class="bi bi-magic me-2"></i>Autocompletado Inteligente</h5>
-            <p class="mb-0 small opacity-75">Ingresa un ISBN o Título para buscar en OpenLibrary.</p>
+<div class="col-12">
+    <div class="card shadow-sm border-0" style="max-width: 800px; margin: 0 auto;">
+        <div class="card-header bg-primary text-white py-3 text-center">
+            <h4 class="mb-0 fw-bold"><i class="bi bi-cloud-plus-fill me-2"></i>Agregar Libro (API)</h4>
+            <small class="opacity-75">Este libro estará disponible inmediatamente para Odoo</small>
         </div>
-        
-        <div class="card-body p-4 bg-light border-bottom">
-            <div class="input-group input-group-lg">
-                <span class="input-group-text bg-white border-end-0 text-primary"><i class="bi bi-search"></i></span>
-                <input type="text" id="busquedaOpenLibrary" class="form-control border-start-0" placeholder="Ej: 9780140328721 o The Little Prince">
-                <button class="btn btn-dark px-4" type="button" onclick="buscarLibro()">
-                    Buscar en OpenLibrary
-                </button>
-            </div>
-            <div id="feedbackBusqueda" class="mt-2 small fw-bold"></div>
-        </div>
-
         <div class="card-body p-4">
-            <form method="POST">
+            <form method="POST" id="bookForm">
                 {% csrf_token %}
-                <div class="row g-3">
-                    <!-- Portada (Hidden URL) -->
-                    <input type="hidden" name="cover_url" id="cover_url">
-                    
-                    <div class="col-12 text-center mb-3" id="previewCoverContainer" style="display:none;">
-                        <img id="previewCover" src="" class="rounded shadow" style="height: 150px;">
-                    </div>
-
+                
+                <!-- Buscador Automático -->
+                <div class="row mb-4">
                     <div class="col-md-12">
-                        <label class="form-label fw-bold">Título del Libro</label>
-                        <input type="text" name="titulo" id="titulo" class="form-control form-control-lg bg-light" required>
+                        <label class="form-label fw-bold text-success">Importar desde OpenLibrary</label>
+                        <div class="input-group">
+                            <input type="text" id="searchQuery" class="form-control" placeholder="Escribe un ISBN (ej: 9780140449136) o Título...">
+                            <button type="button" class="btn btn-success text-white fw-bold" onclick="buscarLibro()">
+                                <i class="bi bi-search me-2"></i>Buscar y Autocompletar
+                            </button>
+                        </div>
+                        <small class="text-muted">Si encuentras el libro, los datos se llenarán solos abajo.</small>
                     </div>
+                </div>
 
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold">ISBN</label>
-                        <input type="text" name="isbn" id="isbn" class="form-control bg-light" required>
-                    </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Título</label>
+                    <input type="text" name="titulo" id="id_titulo" class="form-control form-control-lg" required placeholder="Ej: El Principito">
+                </div>
 
-                    <div class="col-md-6">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
                         <label class="form-label fw-bold">Autor</label>
-                        <input type="text" name="autor" id="autor" class="form-control bg-light" placeholder="Nombre Apellido" required>
+                        <input type="text" name="autor" id="id_autor" class="form-control" required placeholder="Nombre y Apellido">
                     </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">ISBN</label>
+                        <input type="text" name="isbn" id="id_isbn" class="form-control" placeholder="978-...">
+                    </div>
+                </div>
 
-                    <div class="col-md-6">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
                         <label class="form-label fw-bold">Editorial</label>
-                        <input type="text" name="editorial" id="editorial" class="form-control bg-light">
+                        <input type="text" name="editorial" id="id_editorial" class="form-control">
                     </div>
-
-                    <div class="col-md-3">
+                    <div class="col-md-4 mb-3">
                         <label class="form-label fw-bold">Páginas</label>
-                        <input type="number" name="paginas" id="paginas" class="form-control bg-light">
+                        <input type="number" name="paginas" id="id_paginas" class="form-control">
                     </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-bold">Año</label>
+                        <input type="number" name="anio_publicacion" id="id_anio" class="form-control">
+                    </div>
+                </div>
 
-                    <div class="col-md-3">
-                        <label class="form-label fw-bold">Año Publicación</label>
-                        <input type="number" name="anio_publicacion" id="anio_publicacion" class="form-control bg-light" placeholder="Ej: 2005">
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-primary">URL de Portada</label>
+                    <input type="url" name="cover_url" id="id_cover_url" class="form-control bg-light" placeholder="https://covers.openlibrary.org/..." oninput="previewImage(this.value)">
+                    <div class="mt-2 text-center" id="imgPreviewContainer" style="display:none;">
+                        <img id="imgPreview" src="" class="rounded shadow-sm" style="max-height: 150px;">
+                        <p class="text-success small mt-1"><i class="bi bi-check-circle"></i> Vista Previa</p>
                     </div>
-                    
-                    <div class="col-md-3">
-                        <label class="form-label fw-bold">Stock Inicial</label>
-                        <input type="number" name="stock" value="1" min="1" class="form-control bg-light">
-                    </div>
+                </div>
 
-                    <div class="col-12 mt-4">
-                        <button type="submit" class="btn btn-primary w-100 btn-lg rounded-pill fw-bold shadow-sm">
-                            <i class="bi bi-save me-2"></i>Guardar en Biblioteca
-                        </button>
-                    </div>
+                <div class="d-grid gap-2 mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg rounded-pill fw-bold">
+                        Guardar Libro
+                    </button>
+                    <a href="{% url 'api_gestion_libros' %}" class="btn btn-outline-secondary rounded-pill">
+                        Cancelar
+                    </a>
                 </div>
             </form>
         </div>
@@ -85,56 +80,58 @@
 
 <script>
     async function buscarLibro() {
-        const query = document.getElementById('busquedaOpenLibrary').value;
-        const feedback = document.getElementById('feedbackBusqueda');
+        const q = document.getElementById('searchQuery').value;
         const btn = document.querySelector('button[onclick="buscarLibro()"]');
         
-        if (!query) return;
-
-        // UI Loading
+        if (!q) return alert("Escribe algo para buscar.");
+        
         btn.disabled = true;
         btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Buscando...';
-        feedback.className = 'mt-2 small text-muted';
-        feedback.innerText = '';
-
+        
         try {
-            const response = await fetch(`/api/proxy/openlibrary-external/?q=${encodeURIComponent(query)}`);
-            const data = await response.json();
-
-            if (response.ok) {
-                // ADAPTACIÓN: La API ahora devuelve una lista [obj]
-                let libro = data;
-                if (Array.isArray(data)) {
-                    libro = data[0];
-                }
-
-                // Llenar campos
-                document.getElementById('titulo').value = libro.titulo || '';
-                document.getElementById('isbn').value = libro.isbn || '';
-                document.getElementById('autor').value = libro.autor || '';
-                document.getElementById('editorial').value = libro.editorial || '';
-                document.getElementById('paginas').value = libro.paginas || '';
-                document.getElementById('anio_publicacion').value = libro.anio || '';
-                document.getElementById('cover_url').value = libro.cover || '';
-
-                // Mostrar portada
-                if (libro.cover) {
-                    document.getElementById('previewCover').src = libro.cover;
-                    document.getElementById('previewCoverContainer').style.display = 'block';
-                }
-
-                feedback.className = 'mt-2 small text-success';
-                feedback.innerHTML = '<i class="bi bi-check-circle-fill"></i> Libro encontrado y datos cargados.';
+            const res = await fetch(`/api/proxy/openlibrary-external/?q=${encodeURIComponent(q)}`);
+            const data = await res.json();
+            
+            if (data && data.length > 0) {
+                const libro = data[0];
+                
+                document.getElementById('id_titulo').value = libro.titulo || '';
+                document.getElementById('id_autor').value = libro.autor || '';
+                document.getElementById('id_isbn').value = libro.isbn || '';
+                document.getElementById('id_editorial').value = libro.editorial || '';
+                document.getElementById('id_paginas').value = libro.paginas || '';
+                document.getElementById('id_anio').value = libro.anio || '';
+                document.getElementById('id_cover_url').value = libro.cover || '';
+                
+                if (libro.cover) previewImage(libro.cover);
+                
+                // Efecto visual de éxito
+                btn.classList.remove('btn-success');
+                btn.classList.add('btn-warning');
+                btn.innerHTML = '<i class="bi bi-check-lg"></i> ¡Encontrado!';
+                setTimeout(() => {
+                    btn.classList.add('btn-success');
+                    btn.classList.remove('btn-warning');
+                    btn.innerHTML = '<i class="bi bi-search me-2"></i>Buscar de nuevo';
+                    btn.disabled = false;
+                }, 2000);
             } else {
-                feedback.className = 'mt-2 small text-danger';
-                feedback.innerText = 'No se encontró el libro. Intenta con otro término.';
+                alert("No se encontró nada en OpenLibrary.");
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-search me-2"></i>Buscar y Autocompletar';
             }
-        } catch (error) {
-            feedback.className = 'mt-2 small text-danger';
-            feedback.innerText = 'Error de conexión con OpenLibrary.';
-        } finally {
+        } catch (e) {
+            console.error(e);
+            alert("Error al conectar con la API.");
             btn.disabled = false;
-            btn.innerText = 'Buscar en OpenLibrary';
+            btn.innerHTML = '<i class="bi bi-search me-2"></i>Buscar y Autocompletar';
+        }
+    }
+
+    function previewImage(url) {
+        if(url.length > 10) {
+            document.getElementById('imgPreview').src = url;
+            document.getElementById('imgPreviewContainer').style.display = 'block';
         }
     }
 </script>

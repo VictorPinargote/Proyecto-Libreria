@@ -31,8 +31,8 @@
                 <!-- Imagen del libro -->
                 <div class="col-md-4" style="background: linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 100%);">
                     <div class="p-4 text-center">
-                        {% if libro.imagen %}
-                        <img src="{{ libro.imagen.url }}" alt="{{ libro.titulo }}" class="img-fluid rounded shadow"
+                        {% if libro.imagen_url %}
+                        <img src="{{ libro.imagen_url }}" alt="{{ libro.titulo }}" class="img-fluid rounded shadow"
                             style="max-height: 350px;">
                         {% else %}
                         <div class="d-flex flex-column align-items-center justify-content-center"

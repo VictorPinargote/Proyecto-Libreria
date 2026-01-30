@@ -56,7 +56,7 @@
     "descripcion": "ISBN: 9788496517158 | Editorial: Lectorum Publications | Páginas: 40",
     "anio": 0,
     "stock": 1,
-    "cover": "https://covers.openlibrary.org/b/isbn/9788496517158-L.jpg",
+    "cover": "https://covers.openlibrary.org/b/id/3334793-L.jpg",
     "origen": "Django JSON Cache"
   },
   {
@@ -68,7 +68,19 @@
     "descripcion": "ISBN: 9788420406619 | Editorial: Alfaguara | Páginas: 379",
     "anio": 0,
     "stock": 1,
-    "cover": "https://covers.openlibrary.org/b/isbn/9788420406619-L.jpg",
+    "cover": "https://covers.openlibrary.org/b/id/13260548-L.jpg",
+    "origen": "Django JSON Cache"
+  },
+  {
+    "titulo": "¡Libro! Book!",
+    "isbn": "9780547154060",
+    "autor": "Desconocido ",
+    "editorial": "Clarion Books",
+    "paginas": 0,
+    "descripcion": "ISBN: 9780547154060 | Editorial: Clarion Books | Páginas: ",
+    "anio": 2008,
+    "stock": 1,
+    "cover": "https://covers.openlibrary.org/b/id/10233697-L.jpg",
     "origen": "Django JSON Cache"
   }
 ]

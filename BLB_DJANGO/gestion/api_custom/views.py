@@ -1,40 +1,14 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
-import requests
-import re #se usa para?
-from rest_framework import viewsets
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.csrf import csrf_exempt
 from gestion.models import Libro, Autor
-from .serializers import LibroSerializer
-import json
-import os
+import requests, json, os
 from django.conf import settings
 
-# =====================================================
-# 1. VIEWSETS (Endpoints de Datos para Odoo)
-# =====================================================
-
-from rest_framework import viewsets, filters
-
-class LibroAPIViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint que Odoo consume.
-    Solo permite: GET, POST, PUT y DELETE.
-    """
-    queryset = Libro.objects.all().order_by('-id')
-    serializer_class = LibroSerializer
-    http_method_names = ['get', 'post', 'put', 'delete']
-    filter_backends = [filters.SearchFilter]
-    search_fields = ['titulo', 'isbn']
-
-
-# =====================================================
-# 2. INTERFAZ DE ADMINISTRACIÓN API
-# =====================================================
+# --- API VISUAL (Restaurada) ---
 
 @login_required
 def api_dashboard(request):
@@ -43,213 +17,162 @@ def api_dashboard(request):
 
 @login_required
 def api_gestion_libros(request):
-    """Lista los libros disponibles para la API"""
-    libros = Libro.objects.all().order_by('-id')
-    return render(request, 'gestion/templates/api_gestion_libros.html', {'libros': libros})
+    return render(request, 'gestion/templates/api_gestion_libros.html', {'libros': Libro.objects.all().order_by('-id')})
 
 @login_required
 def api_agregar_libro(request):
-    """Vista para agregar libro manualmente o desde OpenLibrary"""
     if request.method == 'POST':
-        titulo = request.POST.get('titulo')
-        isbn = request.POST.get('isbn')
-        autor_nombre = request.POST.get('autor') # Recibimos nombre, buscamos/creamos objeto
-        editorial = request.POST.get('editorial')
-        paginas = request.POST.get('paginas')
-        stock = request.POST.get('stock', 1)
-        anio_publicacion = request.POST.get('anio_publicacion')
-        cover_url = request.POST.get('cover_url')
-
-        # Buscar o crear Autor
+        data = request.POST
+        # Buscar/Crear Autor
         autor_obj = None
-        if autor_nombre:
-            nombre_parts = autor_nombre.split(maxsplit=1)
-            nombre = nombre_parts[0]
-            apellido = nombre_parts[1] if len(nombre_parts) > 1 else ''
+        if data.get('autor'):
+            parts = data.get('autor').split(maxsplit=1)
             autor_obj, _ = Autor.objects.get_or_create(
-                nombre__iexact=nombre, 
-                apellido__iexact=apellido,
-                defaults={'nombre': nombre, 'apellido': apellido}
+                nombre__iexact=parts[0], 
+                defaults={'nombre': parts[0], 'apellido': parts[1] if len(parts) > 1 else ''}
             )
 
         # Crear Libro
-        # Tratar de convertir páginas y año a int, si falla usar None o 0
-        try: paginas_int = int(paginas) if paginas else None
-        except: paginas_int = None
-        
-        try: anio_int = int(anio_publicacion) if anio_publicacion else None
-        except: anio_int = None
-
-        libro = Libro.objects.create(
-            titulo=titulo,
+        Libro.objects.create(
+            titulo=data.get('titulo'),
             autor=autor_obj,
-            stock=int(stock),
+            stock=int(data.get('stock', 1)),
             disponible=True,
-            descripcion=f"ISBN: {isbn} | Editorial: {editorial} | Páginas: {paginas}",
-            anio_publicacion=anio_int,
+            descripcion=f"ISBN: {data.get('isbn')} | Editorial: {data.get('editorial')} | Páginas: {data.get('paginas')}",
+            anio_publicacion=int(data.get('anio_publicacion')) if data.get('anio_publicacion') else None,
             es_de_openlibrary=True,
-            imagen_url=cover_url # Guardamos la URL directa (User Request: Solo URL, no archivo físico)
+            imagen_url=data.get('cover_url')
         )
-        
         return redirect('api_gestion_libros')
-
     return render(request, 'gestion/templates/api_agregar_libro.html')
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def api_exportar_libro(request, libro_id):
+    try:
+        l = get_object_or_404(Libro, pk=libro_id)
+        l.en_odoo = True
+        l.save()
+        return JsonResponse({'status': 'ok'})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+@login_required
+def api_editar_libro(request, libro_id):
+    libro = get_object_or_404(Libro, id=libro_id)
+    if request.method == 'POST':
+        libro.titulo = request.POST.get('titulo')
+        if request.POST.get('autor'):
+            parts = request.POST.get('autor').split(maxsplit=1)
+            autor_obj, _ = Autor.objects.get_or_create(
+                nombre__iexact=parts[0], 
+                defaults={'nombre': parts[0], 'apellido': parts[1] if len(parts) > 1 else ''}
+            )
+            libro.autor = autor_obj
+        
+        libro.stock = int(request.POST.get('stock', libro.stock))
+        libro.anio_publicacion = int(request.POST.get('anio_publicacion')) if request.POST.get('anio_publicacion') else None
+        libro.imagen_url = request.POST.get('cover_url', libro.imagen_url)
+        
+        # Reconstruir descripción
+        isbn = request.POST.get('isbn', 'S/N')
+        edit = request.POST.get('editorial', 'Desconocido')
+        pags = request.POST.get('paginas', '0')
+        libro.descripcion = f"ISBN: {isbn} | Editorial: {edit} | Páginas: {pags}"
+        
+        libro.save() # Esto dispara la señal para actualizar el JSON
+        return redirect('api_gestion_libros')
+    
+    # Parsear descripción para el template
+    desc = libro.descripcion or ""
+    metadata = {'isbn': '', 'editorial': '', 'paginas': ''}
+    for p in desc.split("|"):
+        if "ISBN:" in p: metadata['isbn'] = p.replace("ISBN:", "").strip()
+        if "Editorial:" in p: metadata['editorial'] = p.replace("Editorial:", "").strip()
+        if "Páginas:" in p: metadata['paginas'] = p.replace("Páginas:", "").strip()
+        
+    return render(request, 'gestion/templates/api_editar_libro.html', {'libro': libro, 'meta': metadata})
+
+@login_required
+def api_eliminar_libro(request, libro_id):
+    libro = get_object_or_404(Libro, id=libro_id)
+    if request.method == 'POST':
+        libro.delete() # Esto dispara la señal para actualizar el JSON
+        return redirect('api_gestion_libros')
+    return redirect('api_gestion_libros')
+
+# --- PROXIES (Esenciales) ---
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def api_proxy_openlibrary(request):
     """
-    Endpoint EXCLUSIVO de Datos Locales (JSON).
-    Ya no consulta OpenLibrary. Solo devuelve lo que está en libros_local.json.
+    1. PROXY PRIVADO (Para Odoo):
+    Lee TU archivo libros_local.json. Odoo consume esto.
     """
-    q = request.GET.get('q', '').strip()
+    q = request.GET.get('q', '').strip().lower()
     if not q: return JsonResponse({'error': 'Vacío'}, status=400)
     
-    # Ruta al JSON generado por sync_service.py
     json_path = os.path.join(settings.BASE_DIR, 'gestion', 'api_custom', 'libros_local.json')
-    
-    libro_encontrado_list = []
-    
     if os.path.exists(json_path):
         try:
             with open(json_path, 'r', encoding='utf-8') as f:
-                libros_json = json.load(f)
-                
-            # Buscar en memoria (Case insensitive)
-            q_lower = q.lower()
-            for l in libros_json:
-                # Buscar por título o ISBN
-                if q_lower in l.get('titulo', '').lower() or q_lower in l.get('isbn', '').lower():
-                    # Asegurar que la URL de la portada sea absoluta
-                    if l.get('cover') and not l['cover'].startswith('http'):
-                        l['cover'] = request.build_absolute_uri(l['cover'])
-                    libro_encontrado_list.append(l)
-                    # Si solo queremos el primero, hacemos: break
-                    break
-        except Exception as e:
-            print(f"Error leyendo JSON: {e}")
-
-    if libro_encontrado_list:
-        return JsonResponse(libro_encontrado_list, safe=False)
-    
-    # Si no está en el JSON, devolvemos lista vacía (Odoo entenderá "No encontrado")
+                for l in json.load(f):
+                    if q in l.get('titulo', '').lower() or q in l.get('isbn', '').lower():
+                        return JsonResponse([l], safe=False)
+        except: pass
     return JsonResponse([], safe=False)
-
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def api_openlibrary_proxy_external(request):
     """
-    Endpoint EXCLUSIVO para el Frontend de Django.
-    Este SÍ tiene permiso de consultar OpenLibrary para ayudar a crear nuevos libros.
+    2. PROXY EXTERNO (Para tu Frontend Django):
+    Consulta a OpenLibrary.org para autocompletar formularios.
     """
     q = request.GET.get('q', '').strip()
     if not q: return JsonResponse({'error': 'Vacío'}, status=400)
     
     try:
-        # Lógica original de OpenLibrary que se eliminó, restaurada solo para este endpoint
-        es_isbn = q.replace("-", "").isdigit() and len(q.replace("-", "")) in [10, 13]
         docs = []
+        # Búsqueda por ISBN
+        if q.replace("-", "").isdigit():
+            r = requests.get(f"https://openlibrary.org/isbn/{q.replace('-', '')}.json", timeout=5)
+            if r.status_code == 200:
+                bd = r.json()
+                docs = [{'title': bd.get('title'), 'isbn': [q], 'cover_i': bd.get('covers', [None])[0],
+                         'author_name': ['Desconocido'], 'publisher': bd.get('publishers', [''])[0],
+                         'number_of_pages': bd.get('number_of_pages', 0), 
+                         'first_publish_year': str(bd.get('publish_date', ''))[-4:]}]
 
-        if es_isbn:
-            url_isbn = f"https://openlibrary.org/isbn/{q.replace('-', '')}.json"
-            resp_isbn = requests.get(url_isbn, timeout=5)
-            if resp_isbn.status_code == 200:
-                book_data = resp_isbn.json()
-                
-                autor_nombre = "Desconocido"
-                if 'authors' in book_data:
-                    key_autor = book_data['authors'][0]['key']
-                    try:
-                        resp_autor = requests.get(f"https://openlibrary.org{key_autor}.json", timeout=3)
-                        if resp_autor.status_code == 200:
-                            autor_nombre = resp_autor.json().get('name', 'Desconocido')
-                    except: pass
-                
-                publish_date = book_data.get('publish_date', '')
-                anio = ''.join(filter(str.isdigit, str(publish_date)))[:4]
-                
-                docs = [{
-                    'title': book_data.get('title'),
-                    'isbn': [q],
-                    'author_name': [autor_nombre],
-                    'publisher': book_data.get('publishers', [''])[0],
-                    'number_of_pages_median': book_data.get('number_of_pages', 0),
-                    'first_publish_year': anio,
-                    'cover_i': book_data.get('covers', [None])[0]
-                }]
-
+        # Búsqueda General si falla ISBN
         if not docs:
-            url = "https://openlibrary.org/search.json"
-            params = {'q': q, 'limit': 1}
-            resp = requests.get(url, params=params, timeout=5)
-            if resp.status_code == 200:
-                docs = resp.json().get('docs', [])
+            r = requests.get("https://openlibrary.org/search.json", params={'q': q, 'limit': 1}, timeout=5)
+            if r.status_code == 200: docs = r.json().get('docs', [])
 
         if docs:
-            book = None
-            for doc in docs[:5]:
-                if doc.get('isbn') and len(doc.get('isbn')) > 0:
-                    book = doc
-                    break
-            if not book: book = docs[0]
-
-            cover_url = ''
-            if book.get('cover_i'):
-                cover_url = f"https://covers.openlibrary.org/b/id/{book.get('cover_i')}-L.jpg"
-            elif es_isbn and book.get('covers'): 
-                  cover_url = f"https://covers.openlibrary.org/b/id/{book.get('covers')[0]}-L.jpg"
-
-            isbn_list = book.get('isbn', [])
-            isbn_final = "S/N"
-            if isinstance(isbn_list, list):
-                for code in isbn_list:
-                     if len(code) == 13 and code.startswith('978'):
-                         isbn_final = code
-                         break
-                if isbn_final == "S/N" and len(isbn_list) > 0:
-                     isbn_final = isbn_list[0]
-            else:
-                 isbn_final = isbn_list or "S/N"
-                 
-            publish_date = book.get('publish_date', '')
-            if isinstance(publish_date, list): publish_date = publish_date[0]
-            anio_str = ''.join(filter(str.isdigit, str(publish_date)))[:4]
+            b = docs[0]
+            # Extraer ISBN válido
+            isbn = next((c for c in b.get('isbn', []) if len(c)==13 and c.startswith('978')), b.get('isbn', ['S/N'])[0] if b.get('isbn') else "S/N")
             
-            editorial_val = "Desconocido"
-            pubs = book.get('publisher', [])
-            if isinstance(pubs, list) and len(pubs) > 0:
-                editorial_val = pubs[0]
-            elif isinstance(pubs, str):
-                editorial_val = pubs
+            # Construir URL Portada
+            cover = f"https://covers.openlibrary.org/b/id/{b.get('cover_i')}-L.jpg" if b.get('cover_i') else ""
+            if not cover and b.get('isbn'): 
+                cover = f"https://covers.openlibrary.org/b/isbn/{b.get('isbn')[0]}-L.jpg"
 
-            data = {
-                'titulo': book.get('title'),
-                'isbn': isbn_final,
-                'autor': book.get('author_name', ['Desconocido'])[0] if isinstance(book.get('author_name'), list) else book.get('author_name'),
-                'editorial': editorial_val,
-                'paginas': book.get('number_of_pages_median', 0) or book.get('number_of_pages', 0),
-                'anio': anio_str or 0,
-                'cover': cover_url,
-                'origen': 'OpenLibrary API (Internet)'
-            }
-            return JsonResponse([data], safe=False) # Frontend espera lista
+            return JsonResponse([{
+                'titulo': b.get('title'),
+                'isbn': isbn,
+                'autor': b.get('author_name', ['Desconocido'])[0],
+                'editorial': b.get('publisher', ['Desconocido'])[0] if isinstance(b.get('publisher'), list) else b.get('publisher', 'Desconocido'),
+                'paginas': b.get('number_of_pages', 0),
+                'anio': ''.join(filter(str.isdigit, str(b.get('first_publish_year', ''))))[:4] or 0,
+                'cover': cover,
+                'origen': 'OpenLibrary API'
+            }], safe=False)
 
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
-    
     return JsonResponse([], safe=False)
 
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def api_exportar_libro(request, libro_id):
-    """Marca un libro como disponible para Odoo (en_odoo=True)"""
-    try:
-        libro = get_object_or_404(Libro, pk=libro_id)
-        libro.en_odoo = True
-        libro.save()
-        return JsonResponse({'status': 'ok', 'message': f'Libro {libro.id} exportado correctamente.'})
-    except Exception as e:
-        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
-
+    return JsonResponse([], safe=False)

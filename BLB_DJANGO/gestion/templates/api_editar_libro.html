@@ -1,0 +1,82 @@
+{% extends 'gestion/templates/index.html' %} 
+
+{% block contenido %}
+<div class="col-12">
+    <div class="card shadow-sm border-0" style="max-width: 800px; margin: 0 auto;">
+        <div class="card-header bg-warning text-dark py-3 text-center">
+            <h4 class="mb-0 fw-bold"><i class="bi bi-pencil-square me-2"></i>Editar Libro (API)</h4>
+            <small class="opacity-75">Modifica los datos que se sincronizarán con Odoo</small>
+        </div>
+        <div class="card-body p-4">
+            <form method="POST">
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Título</label>
+                    <input type="text" name="titulo" class="form-control form-control-lg" value="{{ libro.titulo }}" required>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Autor</label>
+                        <input type="text" name="autor" class="form-control" value="{{ libro.autor.nombre }} {{ libro.autor.apellido }}" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">ISBN</label>
+                        <input type="text" name="isbn" class="form-control" value="{{ meta.isbn }}">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-bold">Editorial</label>
+                        <input type="text" name="editorial" class="form-control" value="{{ meta.editorial }}">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-bold">Páginas</label>
+                        <input type="number" name="paginas" class="form-control" value="{{ meta.paginas }}">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-bold">Año</label>
+                        <input type="number" name="anio_publicacion" class="form-control" value="{{ libro.anio_publicacion|default:'' }}">
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-primary">URL de Portada</label>
+                    <input type="url" name="cover_url" class="form-control bg-light" value="{{ libro.imagen_url|default:'' }}" oninput="previewImage(this.value)">
+                    <div class="mt-2 text-center" id="imgPreviewContainer" {% if not libro.imagen_url %}style="display:none;"{% endif %}>
+                        <img id="imgPreview" src="{{ libro.imagen_url }}" class="rounded shadow-sm" style="max-height: 150px;">
+                        <p class="text-success small mt-1"><i class="bi bi-check-circle"></i> Vista Previa</p>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <label class="form-label fw-bold">Stock</label>
+                        <input type="number" name="stock" class="form-control" value="{{ libro.stock }}">
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2 mt-4">
+                    <button type="submit" class="btn btn-warning btn-lg rounded-pill fw-bold">
+                        Guardar Cambios
+                    </button>
+                    <a href="{% url 'api_gestion_libros' %}" class="btn btn-outline-secondary rounded-pill">
+                        Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function previewImage(url) {
+        if(url.length > 10) {
+            document.getElementById('imgPreview').src = url;
+            document.getElementById('imgPreviewContainer').style.display = 'block';
+        }
+    }
+</script>
+{% endblock %}

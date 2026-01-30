@@ -123,10 +123,12 @@
                 </div>
 
                 <div class="mb-4" id="imagen_manual_wrapper">
-                    <label for="id_imagen" class="form-label fw-semibold">
-                        <i class="bi bi-image me-2 text-warning"></i>Imagen de Portada (opcional)
+                    <label for="id_imagen_manual" class="form-label fw-semibold">
+                        <i class="bi bi-link-45deg me-2 text-warning"></i>URL de Portada (Opcional)
                     </label>
-                    <input type="file" id="id_imagen" name="imagen" class="form-control rounded-3" accept="image/*">
+                    <input type="url" id="id_imagen_manual" class="form-control rounded-3" 
+                           placeholder="https://ejemplo.com/portada.jpg"
+                           oninput="document.getElementById('imagen_url_input').value = this.value">
                 </div>
 
                 <div class="d-grid gap-2 mt-4">

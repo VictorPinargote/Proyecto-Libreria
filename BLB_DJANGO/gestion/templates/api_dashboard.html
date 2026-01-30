@@ -1,109 +1,55 @@
 {% extends 'gestion/templates/index.html' %} 
 
 {% block contenido %}
-<div class="col-12 text-center mb-4">
-    <h2 class="display-4 fw-bold text-primary">⚡ BiblioTech API Root</h2>
-    <p class="lead text-secondary">
-        Conecta tus aplicaciones (Odoo, Móvil, Web) con nuestra potente API.
-    </p>
-</div>
+<div class="col-12 py-5">
+    <div class="card shadow-lg border-0" style="background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);">
+        <div class="card-body p-5 text-center text-white">
+            <h1 class="display-4 fw-bold mb-3">🛠️ Panel de Control API</h1>
+            <p class="fs-5 opacity-75 mb-4">Administra la integración con Odoo y los servicios externos.</p>
+            
+            <div class="bg-white bg-opacity-10 p-4 rounded-3 mb-4 d-inline-block">
+                <i class="bi bi-key-fill text-warning fs-3 mb-2 d-block"></i>
+                <span class="d-block small opacity-75">Tu Token de Acceso</span>
+                <code class="d-block fs-4 fw-bold mt-1 text-white">{{ token }}</code>
+            </div>
 
-<div class="col-lg-8 mx-auto">
-    <!-- SECCIÓN DE AUTENTICACIÓN / TOKEN -->
-    <div class="card shadow-lg border-0 mb-5 overflow-hidden">
-        <div class="card-header bg-dark text-white p-4">
-            <h4 class="mb-0"><i class="bi bi-key-fill me-2 text-warning"></i>Tu Llave de Acceso (Token)</h4>
-        </div>
-        <div class="card-body p-4 bg-light">
-            {% if user.is_authenticated %}
-                <div class="text-center">
-                    <p class="mb-3">Usa este token en el encabezado <code>Authorization</code> de tus peticiones.</p>
-                    <div class="input-group mb-3">
-                        <span class="input-group-text bg-white border-end-0"><i class="bi bi-shield-lock text-primary"></i></span>
-                        <input type="text" class="form-control form-control-lg bg-white border-start-0 text-center fw-bold text-dark font-monospace" 
-                               value="{{ token }}" id="apiToken" readonly>
-                        <button class="btn btn-primary" type="button" onclick="copiarToken()">
-                            <i class="bi bi-clipboard"></i> Copiar
-                        </button>
-                    </div>
-                    <div class="alert alert-info border-0 shadow-sm d-flex align-items-center">
-                        <i class="bi bi-info-circle-fill me-2 fs-4"></i>
-                        <div class="text-start small">
-                            <strong>Ejemplo de uso:</strong><br>
-                            <code>Authorization: Token {{ token }}</code>
-                        </div>
-                    </div>
-                </div>
-            {% else %}
-                <div class="text-center py-4">
-                    <i class="bi bi-lock-fill display-1 text-muted mb-3"></i>
-                    <h5 class="fw-bold">Acceso Restringido</h5>
-                    <p class="text-muted">Necesitas iniciar sesión para obtener tu Token de desarrollador.</p>
-                    <div class="d-flex justify-content-center gap-3 mt-3">
-                        <a href="{% url 'login' %}?next={% url 'api_dashboard' %}" class="btn btn-lg btn-outline-primary px-4 rounded-pill fw-bold">
-                            Iniciar Sesión
-                        </a>
-                        <a href="{% url 'registro' %}" class="btn btn-lg btn-primary px-4 rounded-pill fw-bold">
-                            Registrarse
-                        </a>
-                    </div>
-                </div>
-            {% endif %}
+            <div class="d-flex justify-content-center gap-3 mt-4">
+                <a href="{% url 'api_gestion_libros' %}" class="btn btn-light btn-lg rounded-pill fw-bold text-primary px-5 shadow-sm">
+                    <i class="bi bi-collection-fill me-2"></i>Gestión de Libros
+                </a>
+            </div>
         </div>
     </div>
 
-    <!-- SECCIÓN DE DOCUMENTACIÓN RÁPIDA -->
-    <div class="row g-4 mb-5">
-        <div class="col-md-12">
-            <div class="card h-100 border-0 shadow-sm hover-card bg-primary text-white" style="background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);">
-                <div class="card-body p-4 d-flex align-items-center justify-content-between">
-                    <div>
-                        <div class="d-flex align-items-center mb-2">
-                            <div class="icon-box bg-white bg-opacity-25 text-white me-3 rounded-circle" style="width:50px;height:50px;display:grid;place-items:center;">
-                                <i class="bi bi-sliders fs-4"></i>
-                            </div>
-                            <h3 class="fw-bold mb-0">Administración de API</h3>
-                        </div>
-                        <p class="text-white text-opacity-75 mb-0" style="max-width: 600px;">
-                            Gestiona tu catálogo, agrega libros desde OpenLibrary y expórtalos a Odoo. 
-                            Todo desde una interfaz gráfica integrada.
-                        </p>
-                    </div>
-                    <div>
-                        <a href="{% url 'api_gestion_libros' %}" class="btn btn-light btn-lg rounded-pill fw-bold text-primary px-4 shadow">
-                            <i class="bi bi-gear-fill me-2"></i> Administrar
-                        </a>
-                    </div>
+    <!-- Stats Rapidas (Opcional) -->
+    <div class="row mt-4 g-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center p-4">
+                    <i class="bi bi-check-circle text-success fs-1 mb-2"></i>
+                    <h5 class="fw-bold">JSON Local</h5>
+                    <p class="text-muted small">Estado: Sincronizado</p>
                 </div>
             </div>
         </div>
-
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center p-4">
+                    <i class="bi bi-server text-info fs-1 mb-2"></i>
+                    <h5 class="fw-bold">Odoo Proxy</h5>
+                    <p class="text-muted small">Conexión local permitida</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center p-4">
+                    <i class="bi bi-globe text-primary fs-1 mb-2"></i>
+                    <h5 class="fw-bold">OpenLibrary</h5>
+                    <p class="text-muted small">Búsqueda externa habilitada</p>
+                </div>
+            </div>
+        </div>
     </div>
-
 </div>
-
-<!-- CSS ADICIONAL -->
-<style>
-    .hover-card { transition: transform 0.3s ease, box-shadow 0.3s ease; }
-    .hover-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important; }
-</style>
-
-<script>
-    function copiarToken() {
-        var copyText = document.getElementById("apiToken");
-        copyText.select();
-        copyText.setSelectionRange(0, 99999); 
-        navigator.clipboard.writeText(copyText.value);
-        
-        // Feedback visual simple
-        var btn = document.querySelector('button[onclick="copiarToken()"]');
-        var oldHtml = btn.innerHTML;
-        btn.innerHTML = '<i class="bi bi-check-lg"></i> Copiado';
-        btn.classList.replace('btn-primary', 'btn-success');
-        setTimeout(() => {
-            btn.innerHTML = oldHtml;
-            btn.classList.replace('btn-success', 'btn-primary');
-        }, 2000);
-    }
-</script>
 {% endblock %}

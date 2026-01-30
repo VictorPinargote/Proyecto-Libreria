@@ -73,7 +73,12 @@ def editar_libro(request, id):
         libro.stock = int(request.POST.get('stock', libro.stock))
         libro.disponible = request.POST.get('disponible') == 'on'
         if request.POST.get('anio_publicacion'): libro.anio_publicacion = int(request.POST.get('anio_publicacion'))
-        if request.FILES.get('imagen'): libro.imagen = request.FILES.get('imagen')
+        if request.POST.get('anio_publicacion'): libro.anio_publicacion = int(request.POST.get('anio_publicacion'))
+        
+        # Actualizar URL de imagen si se proporciona
+        new_url = request.POST.get('imagen_url')
+        if new_url:
+            libro.imagen_url = new_url
         
         libro.save()
         registrar_log(request.user, 'editar', f'Editó libro: {libro.titulo}', request, 'Libro', libro.pk)
@@ -119,16 +124,11 @@ def crear_libro(request):
                 es_de_openlibrary=request.POST.get('es_de_openlibrary') == 'true'
             )
             
-            if request.FILES.get('imagen'):
-                libro.imagen = request.FILES.get('imagen')
+            # Solo guardamos la URL, no descargamos nada físico
+            img_url = request.POST.get('imagen_url')
+            if img_url:
+                libro.imagen_url = img_url
                 libro.save()
-            elif request.POST.get('imagen_url'):
-                try:
-                    from django.core.files.base import ContentFile
-                    resp = requests.get(request.POST.get('imagen_url'), timeout=10)
-                    if resp.status_code == 200:
-                        libro.imagen.save(f"libro_{libro.pk}.jpg", ContentFile(resp.content), save=True)
-                except: pass
             
             registrar_log(request.user, 'crear', f'Creó libro: {titulo}', request, 'Libro', libro.pk)
             return redirect('lista_libros')
